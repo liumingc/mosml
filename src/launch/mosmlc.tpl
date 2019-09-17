@@ -94,6 +94,8 @@ while : ; do
     -files)
       linkfiles="$linkfiles $1 $2"
       shift;;
+    -pr)
+      compopt="$compopt $1";;
     -*)
       echo "Unknown option \"$1\", ignored" >&2;;
     *)

@@ -1,7 +1,7 @@
 # Unix configuration Makefile for Moscow ML          -*- mode: makefile -*-
 
 # Where to install stuff
-PREFIX=/usr/local
+PREFIX=/home/infliu/mosml.inf
 
 # BINDIR contains true executable files, such as scripts
 # LIBDIR contains bytecode files (such as mosmlcmp and library units), and .dll/.so for dynlibs. 

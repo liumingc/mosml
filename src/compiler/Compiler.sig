@@ -2,6 +2,7 @@ local
   open Mixture Globals Asynt;
 in
 
+val pr_flag : bool ref
 val createLexerStream : BasicIO.instream -> Lexing.lexbuf;
         (* Create a lexer buffer on the given input channel.
            [createLexerStream inchan] returns a lexer buffer which reads

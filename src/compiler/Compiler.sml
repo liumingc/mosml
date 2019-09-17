@@ -408,14 +408,21 @@ fun updateCurrentCompState ((iBas, ExEnv as EXISTS(T,(ME,FE,GE,VE, TE))), RE) =
   else ()
 );
 
+val pr_flag = ref false
+
 fun compLamPhrase os state (RE, lams) =
 (
   app
     (fn (is_pure, lam) =>
-       ((* msgIBlock 0; Pr_lam.printLam lam; msgEOL(); msgEBlock(); *)
+      (
+      if !pr_flag then
+       ( msgIBlock 0; Pr_lam.printLam lam; msgEOL(); msgEBlock() )
+      else ();
        emit_phrase os
          let val zam = compileLambda is_pure lam in
-           (* printZamPhrase zam; msgFlush(); *) 
+           if !pr_flag then
+            ( printZamPhrase zam; msgFlush() )
+           else ();
            zam
          end))
     lams;

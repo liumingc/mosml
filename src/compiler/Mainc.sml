@@ -113,6 +113,10 @@ fun enable_quotation() =
   Lexer.quotation := true
 ;
 
+fun enable_pr () =
+  Compiler.pr_flag := true
+
+
 fun topdec_mode () =
   initialMode := TOPDECmode;
 
@@ -151,7 +155,8 @@ fun main () =
              ("-toplevel",  Arg.Unit topdec_mode),
              ("-orthodox",  Arg.Unit orthodox),
              ("-conservative",  Arg.Unit conservative),
-             ("-liberal",  Arg.Unit liberal)
+             ("-liberal",  Arg.Unit liberal),
+             ("-pr", Arg.Unit enable_pr)
              ]
     anonymous;
   if !path_library <> "" then
