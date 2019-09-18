@@ -4,7 +4,7 @@ in
 
 (* 1996.07.05 -- e *)
 
-val printZamInstr = fn
+val printZamInstrInner = fn
     Kquote sc =>
       printStrConst sc
   | Kget_global (qualid, stamp) =>
@@ -86,6 +86,12 @@ val printZamInstr = fn
       end
 ;
 
+fun printZamInstr x =
+(
+    printZamInstrInner x;
+    msgEOL()
+);
+
 fun printZamSeq zams = printSeq printZamInstr "; " zams;
 
 fun printZamPhrase
@@ -98,6 +104,7 @@ fun printZamPhrase
   msgString "***kph_inits*** = ";
   printSeq printZamInstr "; " inits;
   msgEOL(); msgString "***kph_funcs*** = ";
+  msgEOL();
   printSeq printZamInstr "; " funcs;
   msgEOL();
   msgEBlock()

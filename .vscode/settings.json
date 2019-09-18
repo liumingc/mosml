@@ -2,5 +2,6 @@
     "C_Cpp.default.defines": [
         "unix",
         "THREADED"
-    ]
+    ],
+    "editor.tabSize": 8
 }

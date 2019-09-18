@@ -94,24 +94,24 @@ fun printLam lam =
     Lvar i => (msgString "var:"; msgInt i)
   | Lconst cst => printStrConst cst
   | Lapply(func, args) =>
-      (msgString "(app "; printLam func; msgString " ";
+      (msgString "(app"; msgBreak (1, 2); printLam func; msgBreak (1, 2); msgString " ";
        printSeq printLam " " args; msgString ")")
-  | Lfn lam => (msgString "(fn "; printLam lam; msgString ")")
+  | Lfn lam => (msgString "(fn"; msgBreak (1, 2); printLam lam; msgString ")")
   | Llet(args, scope) =>
-      (msgString "let "; printSeq printLam " " args;
+      (msgString "let"; msgBreak (1, 2); printSeq printLam " " args;
        msgString " in "; printLam scope; msgString " end")
   | Lletrec(args, scope) =>
-      (msgString "letrec "; printSeq printLam " " args;
-       msgString " in "; printLam scope; msgString " end")
+      (msgString "letrec"; msgBreak (1, 2); printSeq printLam " " args;
+       msgBreak (1, 2); msgString "in"; msgBreak (1, 2); printLam scope; msgBreak (1, 2); msgString "end")
   | Lprim(prim, args) =>
-      (msgString "(prim ("; printPrim prim; msgString ") ";
+      (msgString "(prim"; msgBreak (1, 2); msgString "("; printPrim prim; msgString ")"; msgBreak (1, 2);
        printSeq printLam " " args; msgString ")")
   | Lcase(arg, clauses) =>
-      (msgString "(case "; printLam arg; msgString " of ";
+      (msgString "(case"; msgBreak(1, 2); printLam arg; msgString " of "; msgBreak (1, 2);
        printSeq printClause " " clauses; msgString ")")
   | Lswitch(n, arg, clauses) =>
       (msgString "(switch:"; msgInt n; msgString " ";
-       printLam arg; msgString " of ";
+       printLam arg; msgString " of"; msgBreak (1, 2);
        printSeq printSwClause " " clauses; msgString ")")
   | Lstaticfail => msgString "staticfail"
   | Lstatichandle(lam1, lam2) =>
@@ -121,13 +121,13 @@ fun printLam lam =
       (msgString "("; printLam lam1; msgString " handle ";
        printLam lam2; msgString ")")
   | Lif(lam0, lam1, lam2) =>
-      (msgString "if"; printLam lam0; msgString " then (";
-       printLam lam1; msgString ") else "; printLam lam2)
+      (msgString "if"; printLam lam0; msgString " then"; msgEOL (); msgString "(";
+       printLam lam1; msgString ")"; msgEOL (); msgString "else"; msgEOL (); printLam lam2; msgEOL ())
   | Lseq(lam1, lam2) =>
-      (msgString "("; printLam lam1; msgString "; "; printLam lam2;
+      (msgString "("; printLam lam1; msgString ";"; msgEOL(); printLam lam2;
        msgString ")")
   | Lwhile(lam1, lam2) =>
-      (msgString "while "; printLam lam1; msgString " do ";
+      (msgString "while "; printLam lam1; msgString " do"; msgBreak (1, 2);
        printLam lam2)
   | Landalso(lam1, lam2) =>
       (msgString "("; printLam lam1; msgString " andalso ";
