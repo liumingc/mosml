@@ -88,8 +88,9 @@ val printZamInstrInner = fn
 
 fun printZamInstr x =
 (
-    printZamInstrInner x;
-    msgEOL()
+    msgEOL ();
+    msgString "\t";
+    printZamInstrInner x
 );
 
 fun printZamSeq zams = printSeq printZamInstr "; " zams;
