@@ -155,9 +155,9 @@ fun mkDynexn0 exnname     = mkDynexn1 exnname (Lconst constUnit)
 
 (* ps: TODO perhaps share the code for raising Bind and Match *)
 
-val bindExn  = 
+val bindExn  =
     mkDynexn0 (Lprim(Pget_global ({qual="General", id=["exn_bind"]}, 0), []));
-val matchExn = 
+val matchExn =
     mkDynexn0 (Lprim(Pget_global ({qual="General", id=["exn_match"]}, 0), []))
 val bindRaiser  = Lprim(Praise, [bindExn]);
 val matchRaiser = Lprim(Praise, [matchExn]);
@@ -172,11 +172,11 @@ fun partial_fun (loc as Loc(start,stop)) () =
 
 fun partial_let (onTop : bool) (loc as Loc(start,stop)) () =
     (if not onTop then
-	 (msgIBlock 0;
-	  errLocation loc;
-	  errPrompt "Warning: pattern matching is not exhaustive";
-	  msgEOL(); msgEOL();
-	  msgEBlock())
+         (msgIBlock 0;
+          errLocation loc;
+          errPrompt "Warning: pattern matching is not exhaustive";
+          msgEOL(); msgEOL();
+          msgEBlock())
      else ();
      bindRaiser);
 
@@ -227,7 +227,7 @@ fun isSafe (_, exp') =
   | VIDPATHexp (ref (OVLvidpath _)) => fatalError "isSafe:1"
   | FNexp _ => true
   | APPexp(e1,e2) => false
-  | RECexp(ref (RECre fs)) =>
+  | RECexp(ref (RECre fs)) => (* re is short for Recur Exp *)
       all (fn (_, e) => isSafe e) fs
   | RECexp(ref (TUPLEre es)) =>
       all isSafe es
@@ -252,7 +252,7 @@ fun isSafe (_, exp') =
       isSafe e1 andalso isSafe e2
   | STRUCTUREexp (modexp,_,_) => isSafeModExp modexp
   | FUNCTORexp (modexp,_,_) => isSafeModExp modexp
-and isSafeModExp (_, (modexp',_)) = 
+and isSafeModExp (_, (modexp',_)) =
     case modexp' of
       DECmodexp _ => false
     | LONGmodexp _ => true
@@ -291,17 +291,17 @@ fun trConVar (ci : ConInfo) =
 fun trExConVar (env as (rho, depth))  (ii : IdInfo) (ei:ExConInfo) =
   let val {exconArity, ...} = !ei
       val en = translateLongAccess ValId env ii
-  in 
+  in
       if exconArity = 0 then mkDynexn0 en
       else Llet([en], Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
-  end 
+  end
 
 fun trTopDynExConVar (ei : ExConInfo) (en:Lambda) =
   let val {exconArity,...} = !ei
-  in if exconArity = 0 then 
+  in if exconArity = 0 then
          mkDynexn0 en
      else
-	 Llet([en], Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
+         Llet([en], Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
   end;
 
 fun trPrimVar prim =
@@ -342,7 +342,7 @@ fun trVar (env as (rho, depth)) (ii : IdInfo) =
        | CONik ci =>
           trConVar ci
        | EXCONik ei =>
-          trExConVar env ii ei) 
+          trExConVar env ii ei)
   end;
 
 
@@ -353,228 +353,228 @@ fun getGlobal asId {qual,id} =
 ;
 
 fun coerceVarEnv S VE' =
- let val lookupVEofS = lookupVEofStr S 
- in foldEnv 
-     (fn id => fn {info = (_,cs'),...} => fn tr_VE => 
-      case cs' of  
-	  VARname _ => 
-	    (let val (field,{qualid,info=(_,cs)}) = lookupVEofS id 
-	     in case cs of
-		 VARname _ => 
-		     if isGlobalName qualid 
-			 then (Lprim(Pget_global(qualid,0),[]))::tr_VE
-		     else
-			 (Lprim(Pfield field,[Lvar 0]))::tr_VE
-	       |  PRIMname pi => (trPrimVar (#primOp pi))::tr_VE
-	       |  CONname ci => (trConVar ci)::tr_VE
-	       |  EXNname ei => 
-		     (let val {exconArity, ...} = !ei
-			  val en = 
-			      if isGlobalName qualid then
-				  getGlobal ValId qualid
-			      else Lprim(Pfield field,[Lvar 0])
-		      in
-			  if exconArity = 0 then
-			      mkDynexn0 en 
-			  else
-			      Llet([en], Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
-		      end 
-		      :: tr_VE)
-	       | REFname => fatalError "coerceVarEnv:1"
-	     end)
-	| EXNname ei' => 
-	     let val (field,{qualid,info = (_,cs)}) = lookupVEofS id 
-	     in case cs of
-		 EXNname ei => 
-		     (let val {exconArity, ...} = !ei
-		      in
-			  if isGlobalName qualid then getGlobal ValId qualid
-			  else Lprim(Pfield field, [Lvar 0])
-		      end 
-		     :: tr_VE)
-	       | _  => fatalError "coerceVarEnv:3"
-	     end
-	| _ (* PRIMname pi' | CONname ci' | REFname *) => 
-	     tr_VE)
-     [] 
+ let val lookupVEofS = lookupVEofStr S
+ in foldEnv
+     (fn id => fn {info = (_,cs'),...} => fn tr_VE =>
+      case cs' of
+          VARname _ =>
+            (let val (field,{qualid,info=(_,cs)}) = lookupVEofS id
+             in case cs of
+                 VARname _ =>
+                     if isGlobalName qualid
+                         then (Lprim(Pget_global(qualid,0),[]))::tr_VE
+                     else
+                         (Lprim(Pfield field,[Lvar 0]))::tr_VE
+               |  PRIMname pi => (trPrimVar (#primOp pi))::tr_VE
+               |  CONname ci => (trConVar ci)::tr_VE
+               |  EXNname ei =>
+                     (let val {exconArity, ...} = !ei
+                          val en =
+                              if isGlobalName qualid then
+                                  getGlobal ValId qualid
+                              else Lprim(Pfield field,[Lvar 0])
+                      in
+                          if exconArity = 0 then
+                              mkDynexn0 en
+                          else
+                              Llet([en], Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
+                      end
+                      :: tr_VE)
+               | REFname => fatalError "coerceVarEnv:1"
+             end)
+        | EXNname ei' =>
+             let val (field,{qualid,info = (_,cs)}) = lookupVEofS id
+             in case cs of
+                 EXNname ei =>
+                     (let val {exconArity, ...} = !ei
+                      in
+                          if isGlobalName qualid then getGlobal ValId qualid
+                          else Lprim(Pfield field, [Lvar 0])
+                      end
+                     :: tr_VE)
+               | _  => fatalError "coerceVarEnv:3"
+             end
+        | _ (* PRIMname pi' | CONname ci' | REFname *) =>
+             tr_VE)
+     []
      VE'
  end
 and coerceFunEnv S FE' tr_VE =
     let val lookupFEofS = lookupFEofStr S
-    in foldEnv 
-	(fn id => fn {info = F',...} => fn tr_FE_VE =>
-	 let val (field,{qualid,info = F}) = lookupFEofS id 
-	     val trF = if isGlobalName qualid 
-			   then  getGlobal FunId qualid
-		       else Lprim(Pfield field, [Lvar 0])
-			   
-	 in 
-	     (coerceFun trF F F')::tr_FE_VE
-	 end) 
-	tr_VE 
-	FE'
+    in foldEnv
+        (fn id => fn {info = F',...} => fn tr_FE_VE =>
+         let val (field,{qualid,info = F}) = lookupFEofS id
+             val trF = if isGlobalName qualid
+                           then  getGlobal FunId qualid
+                       else Lprim(Pfield field, [Lvar 0])
+
+         in
+             (coerceFun trF F F')::tr_FE_VE
+         end)
+        tr_VE
+        FE'
     end
 and coerceModEnv S ME' tr_FE_VE =
-    let val lookupMEofS = lookupMEofStr S   
-    in foldEnv 
-	(fn id => fn {info = RS',...} => fn tr_ME_FE_VE =>
-	 let val (field,{qualid,info = RS}) = lookupMEofS id 
-	     val trM = if isGlobalName qualid 
-			   then  getGlobal ModId qualid
-		       else Lprim(Pfield field, [Lvar 0])
-			   
-	 in 
-	     (coerceRecStr trM RS RS')::tr_ME_FE_VE
-	 end) 
-	tr_FE_VE 
-	ME'
+    let val lookupMEofS = lookupMEofStr S
+    in foldEnv
+        (fn id => fn {info = RS',...} => fn tr_ME_FE_VE =>
+         let val (field,{qualid,info = RS}) = lookupMEofS id
+             val trM = if isGlobalName qualid
+                           then  getGlobal ModId qualid
+                       else Lprim(Pfield field, [Lvar 0])
+
+         in
+             (coerceRecStr trM RS RS')::tr_ME_FE_VE
+         end)
+        tr_FE_VE
+        ME'
     end
 and coerceStr lam S S' =
-    case S' of 
+    case S' of
      STRstr(ME',FE',GE',TE',VE') =>
-	 let val tr_VE = coerceVarEnv S VE' 
-	     val tr_FE_VE = coerceFunEnv S FE' tr_VE
-	     val tr_ME_FE_VE = coerceModEnv S ME' tr_FE_VE 
-	 in
-	     if isIdentityCoercion S 0 tr_ME_FE_VE 
-		 then lam 
-	     else 
-		 Llet([lam],Lstruct tr_ME_FE_VE)
-	 end
+         let val tr_VE = coerceVarEnv S VE'
+             val tr_FE_VE = coerceFunEnv S FE' tr_VE
+             val tr_ME_FE_VE = coerceModEnv S ME' tr_FE_VE
+         in
+             if isIdentityCoercion S 0 tr_ME_FE_VE
+                 then lam
+             else
+                 Llet([lam],Lstruct tr_ME_FE_VE)
+         end
   | _ => fatalError "coerceStr"
-and isIdentityCoercion S pos (Lprim(Pfield field, [Lvar 0])::lams) = 
+and isIdentityCoercion S pos (Lprim(Pfield field, [Lvar 0])::lams) =
       (pos = field) andalso isIdentityCoercion S (pos+1) lams
   | isIdentityCoercion S pos (_::lams) = false
   | isIdentityCoercion S pos [] = (sizeOfStr S) = pos
-and coerceRecStr lam (NONrec S) (NONrec S') = coerceStr lam S S' 
-  | coerceRecStr lam RS (RECrec (_,RS')) = coerceRecStr lam RS RS'    
-  | coerceRecStr lam (RECrec (_,RS)) RS' = coerceRecStr lam RS RS'    
-and coerceMod lam (STRmod RS) (STRmod RS') = coerceRecStr lam RS RS' 
+and coerceRecStr lam (NONrec S) (NONrec S') = coerceStr lam S S'
+  | coerceRecStr lam RS (RECrec (_,RS')) = coerceRecStr lam RS RS'
+  | coerceRecStr lam (RECrec (_,RS)) RS' = coerceRecStr lam RS RS'
+and coerceMod lam (STRmod RS) (STRmod RS') = coerceRecStr lam RS RS'
   | coerceMod lam (FUNmod F) (FUNmod F') = coerceFun lam F F'
   | coerceMod _ _ _ = fatalError "coerceMod"
 and coerceFun lam (_,M1,EXISTSexmod(_,M1')) (_,M2,EXISTSexmod(_,M2')) =
     let val domCoercion = coerceMod (Lvar 0) (normMod M2) (normMod M1)
-	val rngCoercion = coerceMod (Lvar 0) (normMod M1') (normMod M2')
+        val rngCoercion = coerceMod (Lvar 0) (normMod M1') (normMod M2')
     in case (domCoercion,rngCoercion) of
-	  (Lvar 0, Lvar 0) => lam
-	| (Lvar 0, _) => 
-	      Llet([lam], 
-		   Lfn(Llet([Lapply(Lvar 1,[Lvar 0])],rngCoercion)))
-	| (_, Lvar 0) => 
-	      Llet([lam], 
-		   Lfn(Llet([domCoercion],
-			    Lapply(Lvar 2,[Lvar 0]))))
-	 | (_,_) =>
-	      Llet([lam], 
-		   Lfn(Llet([domCoercion],
-			    Llet([Lapply(Lvar 2,[Lvar 0])],
-				 rngCoercion))))
+          (Lvar 0, Lvar 0) => lam
+        | (Lvar 0, _) =>
+              Llet([lam],
+                   Lfn(Llet([Lapply(Lvar 1,[Lvar 0])],rngCoercion)))
+        | (_, Lvar 0) =>
+              Llet([lam],
+                   Lfn(Llet([domCoercion],
+                            Lapply(Lvar 2,[Lvar 0]))))
+         | (_,_) =>
+              Llet([lam],
+                   Lfn(Llet([domCoercion],
+                            Llet([Lapply(Lvar 2,[Lvar 0])],
+                                 rngCoercion))))
     end;
 
 
 fun coerceDecVarEnv (env as (rho,depth)) VE VE' =
-    foldEnv 
-     (fn id => fn {info = (_,cs'),...} => fn tr_VE => 
-      case cs' of  
-	  VARname _ => 
-	    (let val {qualid,info=(_,cs)} = lookupEnv VE id 
-	     in case cs of
-		 VARname _ => 
-		     if isGlobalName qualid 
-			 then (Lprim(Pget_global(qualid,0),[]))::tr_VE
-		     else
-			 (translateLocalAccess ValId env id)::tr_VE
-	       |  PRIMname pi => (trPrimVar (#primOp pi))::tr_VE
-	       |  CONname ci => (trConVar ci)::tr_VE
-	       |  EXNname ei => 
-		     (let val {exconArity, ...} = !ei
-			  val en = 
-			      if isGlobalName qualid then 
-				  getGlobal ValId qualid
-			      else
-				  translateLocalAccess ValId env id
-		      in
-			  if exconArity = 0 then
-			      mkDynexn0 en 
-			  else
-			      Llet([en],Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
-		      end
-		      :: tr_VE)
-	       | REFname => fatalError "coerceDecVarEnv:1"
-	     end)
-	| EXNname ei' => 
-	     let val {qualid,info = (_,cs)} = lookupEnv VE id 
-	     in 
-	        case cs of
-		   EXNname ei => 
-		     (let val {exconArity, ...} = !ei
-		      in
-			  if isGlobalName qualid then getGlobal ValId qualid
-			  else translateLocalAccess ValId env id
-		      end
-		      :: tr_VE)
-		 | _  => fatalError "coerceDecVarEnv:3"
-	     end
-	| _ (* PRIMname pi' | CONname ci' | REFname *) => 
-	     tr_VE)
-     [] 
+    foldEnv
+     (fn id => fn {info = (_,cs'),...} => fn tr_VE =>
+      case cs' of
+          VARname _ =>
+            (let val {qualid,info=(_,cs)} = lookupEnv VE id
+             in case cs of
+                 VARname _ =>
+                     if isGlobalName qualid
+                         then (Lprim(Pget_global(qualid,0),[]))::tr_VE
+                     else
+                         (translateLocalAccess ValId env id)::tr_VE
+               |  PRIMname pi => (trPrimVar (#primOp pi))::tr_VE
+               |  CONname ci => (trConVar ci)::tr_VE
+               |  EXNname ei =>
+                     (let val {exconArity, ...} = !ei
+                          val en =
+                              if isGlobalName qualid then
+                                  getGlobal ValId qualid
+                              else
+                                  translateLocalAccess ValId env id
+                      in
+                          if exconArity = 0 then
+                              mkDynexn0 en
+                          else
+                              Llet([en],Lfn(mkDynexn1 (Lvar 1) (Lvar 0)))
+                      end
+                      :: tr_VE)
+               | REFname => fatalError "coerceDecVarEnv:1"
+             end)
+        | EXNname ei' =>
+             let val {qualid,info = (_,cs)} = lookupEnv VE id
+             in
+                case cs of
+                   EXNname ei =>
+                     (let val {exconArity, ...} = !ei
+                      in
+                          if isGlobalName qualid then getGlobal ValId qualid
+                          else translateLocalAccess ValId env id
+                      end
+                      :: tr_VE)
+                 | _  => fatalError "coerceDecVarEnv:3"
+             end
+        | _ (* PRIMname pi' | CONname ci' | REFname *) =>
+             tr_VE)
+     []
      VE'
 and coerceDecFunEnv env FE FE' tr_VE =
-    foldEnv 
-	(fn id => fn {info = F',...} => fn tr_FE_VE =>
-	 let val {qualid,info = F} = lookupEnv FE id 
-	     val trF = if isGlobalName qualid 
-			   then  getGlobal FunId qualid
-		       else translateLocalAccess FunId env id
-			   
-	 in 
-	     (coerceFun trF F F')::tr_FE_VE
-	 end) 
-	tr_VE 
-	FE'
+    foldEnv
+        (fn id => fn {info = F',...} => fn tr_FE_VE =>
+         let val {qualid,info = F} = lookupEnv FE id
+             val trF = if isGlobalName qualid
+                           then  getGlobal FunId qualid
+                       else translateLocalAccess FunId env id
+
+         in
+             (coerceFun trF F F')::tr_FE_VE
+         end)
+        tr_VE
+        FE'
 and coerceDecModEnv env ME ME' tr_FE_VE =
-    foldEnv 
-	(fn id => fn {info = RS',...} => fn tr_ME_FE_VE =>
-	 let val {qualid,info = RS} = lookupEnv ME id 
-	     val trM = if isGlobalName qualid 
-			   then  getGlobal ModId qualid
-		       else translateLocalAccess ModId env id
-	 in 
-	     (coerceRecStr trM RS RS')::tr_ME_FE_VE
-	 end) 
-	tr_FE_VE 
-	ME'
+    foldEnv
+        (fn id => fn {info = RS',...} => fn tr_ME_FE_VE =>
+         let val {qualid,info = RS} = lookupEnv ME id
+             val trM = if isGlobalName qualid
+                           then  getGlobal ModId qualid
+                       else translateLocalAccess ModId env id
+         in
+             (coerceRecStr trM RS RS')::tr_ME_FE_VE
+         end)
+        tr_FE_VE
+        ME'
 (*
 and coerceDec env (STRstr(ME,FE,TE,VE)) (STRstr(ME',FE',TE',VE')) =
-      let val tr_VE = coerceDecVarEnv env VE VE' 
+      let val tr_VE = coerceDecVarEnv env VE VE'
           val tr_FE_VE = coerceDecFunEnv env FE FE' tr_VE
-          val tr_ME_FE_VE = coerceDecModEnv env ME ME' tr_FE_VE 
+          val tr_ME_FE_VE = coerceDecModEnv env ME ME' tr_FE_VE
       in
-	      Lstruct tr_ME_FE_VE
+              Lstruct tr_ME_FE_VE
       end;
 *)
 and coerceDec env RS RS' =
-      let val (ME,FE,_,_,VE) = 
-	       case SofRecStr RS of
-		 STRstr ES => ES
-	       | _ => fatalError "coerceDec:1"
-	  val (ME',FE',_,_,VE') = 
-	      case SofRecStr RS' of
-		  STRstr ES' => ES'
-	      | _ => fatalError "coerceDec:2"
-          val tr_VE = coerceDecVarEnv env VE VE' 
+      let val (ME,FE,_,_,VE) =
+               case SofRecStr RS of
+                 STRstr ES => ES
+               | _ => fatalError "coerceDec:1"
+          val (ME',FE',_,_,VE') =
+              case SofRecStr RS' of
+                  STRstr ES' => ES'
+              | _ => fatalError "coerceDec:2"
+          val tr_VE = coerceDecVarEnv env VE VE'
           val tr_FE_VE = coerceDecFunEnv env FE FE' tr_VE
-          val tr_ME_FE_VE = coerceDecModEnv env ME ME' tr_FE_VE 
+          val tr_ME_FE_VE = coerceDecModEnv env ME ME' tr_FE_VE
       in
-	      Lstruct tr_ME_FE_VE
+              Lstruct tr_ME_FE_VE
       end;
 
 fun trExp (env as (rho, depth)) (exp as (loc, exp')) =
   case exp' of
     SCONexp (scon, _) =>
       Lconst (ATOMsc scon)
-  | VIDPATHexp (ref (RESvidpath ii))=> 
-      trVar env ii 
+  | VIDPATHexp (ref (RESvidpath ii))=>
+      trVar env ii
   | VIDPATHexp (ref (OVLvidpath _)) => fatalError "trExp:1"
   | FNexp [] =>
       fatalError "trExp:2"
@@ -631,9 +631,9 @@ fun trExp (env as (rho, depth)) (exp as (loc, exp')) =
   | FUNCTORexp(modexp,sigexp, ref (SOME (EXISTSexmod(_,M')))) =>
         trConstrainedModExp env modexp M'
   | FUNCTORexp (modexp,sigexp, _) =>
-        fatalError "trExp:5"      
+        fatalError "trExp:5"
 and trVarApp env (ii : IdInfo) args =
-  let val {info={idKind, ...},...} = ii in 
+  let val {info={idKind, ...},...} = ii in
     case #info(!idKind) of
         VARik =>
           let val (env', tr_args, envelope) = trArgs env args
@@ -678,17 +678,17 @@ and trVarApp env (ii : IdInfo) args =
                   end
           end
       | EXCONik ei =>
-          let val {exconArity, ...} = !ei 
-	  in
-	      if List.length args <> 1 then
-		  fatalError "trVarApp: unary excon requires 1 arg"
-	      else ();
-	      if exconArity = 0 then
-		  fatalError "trVarApp: nullary excon in app"
-	      else ();
-	      let val en = translateLongAccess ValId env ii
-		  val tr_arg = trExp env (hd args)
-	      in mkDynexn1 en tr_arg end
+          let val {exconArity, ...} = !ei
+          in
+              if List.length args <> 1 then
+                  fatalError "trVarApp: unary excon requires 1 arg"
+              else ();
+              if exconArity = 0 then
+                  fatalError "trVarApp: nullary excon in app"
+              else ();
+              let val en = translateLongAccess ValId env ii
+                  val tr_arg = trExp env (hd args)
+              in mkDynexn1 en tr_arg end
           end
       | STRik => fatalError "trVarApp: STRik"
       | FUNik => fatalError "trVarApp: FUNik"
@@ -697,32 +697,32 @@ and trVarApp env (ii : IdInfo) args =
 and trPrimApp env prim args =
     case getPrimImpl prim of
         GVprim globalName =>
-	    let val (env', tr_args, envelope) = trArgs env args 
-	    in envelope(Lapply(trPrimVar prim, tr_args)) end
+            let val (env', tr_args, envelope) = trArgs env args
+            in envelope(Lapply(trPrimVar prim, tr_args)) end
       | VMprim(arity, p) =>
-	    if arity <> List.length args then 
-		let val (env', tr_args, envelope) = trArgs env args 
-		in envelope(Lapply(trPrimVar prim, tr_args)) end
-	    else 
-		Lprim(p, map (trExp env) args)
+            if arity <> List.length args then
+                let val (env', tr_args, envelope) = trArgs env args
+                in envelope(Lapply(trPrimVar prim, tr_args)) end
+            else
+                Lprim(p, map (trExp env) args)
       | VMPprim(arity, p) =>
-	    let val (env', tr_args, envelope) = trArgs env args 
-	    in
-		if (arity <> List.length tr_args) then
-		    envelope(Lapply(trPrimVar prim, tr_args))
-		else if canSplitFirstArg tr_args then
-		    envelope(Lprim(p, splitFirstArg tr_args))
-		else if arity = 1 then
-		    Llet(tr_args, Lprim(p, splitFirstArg [Lvar 0]))
-		else
-		    envelope(Lapply(trPrimVar prim, tr_args))
-	    end
+            let val (env', tr_args, envelope) = trArgs env args
+            in
+                if (arity <> List.length tr_args) then
+                    envelope(Lapply(trPrimVar prim, tr_args))
+                else if canSplitFirstArg tr_args then
+                    envelope(Lprim(p, splitFirstArg tr_args))
+                else if arity = 1 then
+                    Llet(tr_args, Lprim(p, splitFirstArg [Lvar 0]))
+                else
+                    envelope(Lapply(trPrimVar prim, tr_args))
+            end
       | GVTprim(globalName, sc) =>
-	    let val (env', tr_args, envelope) = trArgs env args 
-	    in
-		envelope(Lapply(Lprim(Pget_global (globalName, 0), []),
-				Lconst(QUOTEsc (ref sc))::tr_args))
-	    end
+            let val (env', tr_args, envelope) = trArgs env args
+            in
+                envelope(Lapply(Lprim(Pget_global (globalName, 0), []),
+                                Lconst(QUOTEsc (ref sc))::tr_args))
+            end
 
 and trRec env tag fs =
   let val labs = map fst fs and es = map snd fs
@@ -794,62 +794,62 @@ and trOpenLongStrIdInfo depth ((_,ref NONE):LongModIdInfo) =
       fatalError "trOpenLongStrIdInfo:1"
   | trOpenLongStrIdInfo depth ((longstrid,ref(SOME (ME,FE,_,VE,_))):LongModIdInfo) =
       let val {info={idKind,...}, ...} = longstrid
-	  val {qualid, ...} = !idKind
-	  val _ = if isUnitName qualid then fatalError "trOpenLongStrIdInfo:2" else ()
-      in 
-	  let val (rhoME,posME) = 
-	      foldEnv (fn id => fn {qualid,...} => fn cont => fn pos =>
-		       if isGlobalName qualid
-			   then cont pos 
-		       else let val (rhoME,posME) = cont (pos + 1) 
-				in
-				    (bindInEnv rhoME  (ModId id) 
-				     (Path_son (pos, Path_local depth)),
-				     posME)
-			    end)
-	      (fn pos => (NILenv,pos))
-	      ME
-	      0
-	      val (rhoMEFE,posMEFE) = 
-		  foldEnv (fn id => fn {qualid,...} => fn cont => fn pos => 		
-			   if isGlobalName qualid
-			       then cont pos 
-			   else let val (rhoMEFE,posMEFE) = cont (pos + 1) 
-				in   (bindInEnv rhoMEFE  (FunId id) 
-				      (Path_son (pos, Path_local depth)),
-				      posMEFE)
-				end)
-		  (fn pos => (rhoME,pos))
-		  FE
-		  posME
-	      val (rhoMEFEVE,posMEFEVE) = 
-		  foldEnv (fn id => fn {qualid,info = (_,cs)} => fn cont => fn pos =>
-			   case cs of  
-			       VARname _ => (* cvr: review *)
-				   if isGlobalName qualid 
-				       then cont pos
-				   else 
-				       let val (rhoMEFEVE,posMEFEVE) = cont (pos + 1) 
-				       in
-					   (bindInEnv rhoMEFEVE  (ValId id) 
-					    (Path_son (pos, Path_local depth)),
-					    posMEFEVE)
-				       end
-			     | EXNname ei => 
-				       if isGlobalName qualid then cont pos
-				       else 
-					   let val (rhoMEFEVE,posMEFEVE) = cont (pos + 1) 
-					   in
-					       (bindInEnv rhoMEFEVE  (ValId id) 
-						(Path_son (pos, Path_local depth)),
-						posMEFEVE)
-					   end
-			     | _ => cont pos)
-		  (fn pos => (rhoMEFE,pos))
-		  VE
-		  posMEFE
-	  in rhoMEFEVE
-	  end
+          val {qualid, ...} = !idKind
+          val _ = if isUnitName qualid then fatalError "trOpenLongStrIdInfo:2" else ()
+      in
+          let val (rhoME,posME) =
+              foldEnv (fn id => fn {qualid,...} => fn cont => fn pos =>
+                       if isGlobalName qualid
+                           then cont pos
+                       else let val (rhoME,posME) = cont (pos + 1)
+                                in
+                                    (bindInEnv rhoME  (ModId id)
+                                     (Path_son (pos, Path_local depth)),
+                                     posME)
+                            end)
+              (fn pos => (NILenv,pos))
+              ME
+              0
+              val (rhoMEFE,posMEFE) =
+                  foldEnv (fn id => fn {qualid,...} => fn cont => fn pos =>
+                           if isGlobalName qualid
+                               then cont pos
+                           else let val (rhoMEFE,posMEFE) = cont (pos + 1)
+                                in   (bindInEnv rhoMEFE  (FunId id)
+                                      (Path_son (pos, Path_local depth)),
+                                      posMEFE)
+                                end)
+                  (fn pos => (rhoME,pos))
+                  FE
+                  posME
+              val (rhoMEFEVE,posMEFEVE) =
+                  foldEnv (fn id => fn {qualid,info = (_,cs)} => fn cont => fn pos =>
+                           case cs of
+                               VARname _ => (* cvr: review *)
+                                   if isGlobalName qualid
+                                       then cont pos
+                                   else
+                                       let val (rhoMEFEVE,posMEFEVE) = cont (pos + 1)
+                                       in
+                                           (bindInEnv rhoMEFEVE  (ValId id)
+                                            (Path_son (pos, Path_local depth)),
+                                            posMEFEVE)
+                                       end
+                             | EXNname ei =>
+                                       if isGlobalName qualid then cont pos
+                                       else
+                                           let val (rhoMEFEVE,posMEFEVE) = cont (pos + 1)
+                                           in
+                                               (bindInEnv rhoMEFEVE  (ValId id)
+                                                (Path_son (pos, Path_local depth)),
+                                                posMEFEVE)
+                                           end
+                             | _ => cont pos)
+                  (fn pos => (rhoMEFE,pos))
+                  VE
+                  posMEFE
+          in rhoMEFEVE
+          end
       end
 and trValDec onTop (env as (rho, depth)) pvbs rvbs =
   let val ((rho',  depth'),  envelope' ) =
@@ -890,42 +890,42 @@ and trDec (env as (rho, depth)) (loc, dec') =
                               trDec ((plusEnv rho rho'), depth') dec2
       in ((plusEnv rho' rho'', depth''), envelope' o envelope'') end
   | FIXITYdec  _ =>
-	  ((NILenv, depth), fn lam => lam)
-  | STRUCTUREdec mbs => 
+          ((NILenv, depth), fn lam => lam)
+  | STRUCTUREdec mbs =>
        trModBindList env mbs
-  | FUNCTORdec fbs => 
+  | FUNCTORdec fbs =>
        trFunBindList env fbs
-  | SIGNATUREdec _ => 
+  | SIGNATUREdec _ =>
         ((NILenv, depth), fn lam => lam)
 and trModBindList (env as (rho, depth)) mbs =
   let val id_path_list =
         mapFrom (fn depth =>
                    fn (MODBINDmodbind((loc,mid), _))   =>
                               (mid, Path_local depth)
-		    | (ASmodbind((loc,mid), _,_))   =>
+                    | (ASmodbind((loc,mid), _,_))   =>
                               (mid, Path_local depth))
                 depth mbs
       and len = List.length mbs
       and args = mapFrom (fn i => fn mb => trModBind (rho, i) mb) depth mbs
       val rho' = foldR (fn (id, path) => fn rho => bindInEnv rho (ModId id) path)
                        NILenv id_path_list
-  in ((rho', depth+len), fn lam => Llet(args, lam)) 
+  in ((rho', depth+len), fn lam => Llet(args, lam))
   end
 and trOpenLongModIdInfos (env as (rho, depth)) longmodidinfos =
-  let val longstridinfos = 
+  let val longstridinfos =
       drop (fn ({info={idKind,...}, ...},_) =>
-	    let val {qualid, ...} = !idKind
-	    in  isUnitName qualid
-	    end) longmodidinfos
+            let val {qualid, ...} = !idKind
+            in  isUnitName qualid
+            end) longmodidinfos
       val rhos = mapFrom trOpenLongStrIdInfo depth longstridinfos
       and len = List.length longstridinfos
-      and args = 
-	  mapFrom (fn depth => fn (longstrid,_) => 
-		   translateLongAccess ModId (rho,depth) longstrid)
-	          depth
-		  longstridinfos
+      and args =
+          mapFrom (fn depth => fn (longstrid,_) =>
+                   translateLongAccess ModId (rho,depth) longstrid)
+                  depth
+                  longstridinfos
       val rho' = foldR (fn rho => fn rho' => plusEnv rho rho') NILenv rhos
-  in ((rho', depth+len), fn lam => Llet(args, lam)) 
+  in ((rho', depth+len), fn lam => Llet(args, lam))
   end
 and trModBind env = fn
     MODBINDmodbind(_, modexp) =>
@@ -940,53 +940,53 @@ and trFunBind env = fn
 and trFunBindList (env as (rho, depth)) fbs =
   let val id_path_list =
         mapFrom (fn depth =>
-		 fn (FUNBINDfunbind((loc,funid), _)) =>
-		       (funid, Path_local depth)
-		  | (ASfunbind((loc,funid), _,_)) =>
-		       (funid, Path_local depth))
+                 fn (FUNBINDfunbind((loc,funid), _)) =>
+                       (funid, Path_local depth)
+                  | (ASfunbind((loc,funid), _,_)) =>
+                       (funid, Path_local depth))
                 depth fbs
       and len = List.length fbs
-      and args = 
-	  mapFrom (fn depth => fn mb => trFunBind (rho, depth) mb) 
-	          depth 
-		  fbs
+      and args =
+          mapFrom (fn depth => fn mb => trFunBind (rho, depth) mb)
+                  depth
+                  fbs
       val rho' = foldR (fn (id, path) => fn rho => bindInEnv rho (FunId id) path)
                        NILenv id_path_list
   in ((rho', depth+len), fn lam => Llet(args, lam)) end
-and trModExp (env as (rho,depth)) (_, (modexp,r)) = 
+and trModExp (env as (rho,depth)) (_, (modexp,r)) =
   (* cvr: consider setting r to NONE to free up space *)
   case (modexp,!r) of
     (DECmodexp dec, SOME (EXISTSexmod (_, STRmod RS))) =>
-      let val (ME,FE,_,_,VE) = 
-	       case SofRecStr RS of
-		   STRstr ES => ES
-	       | _ => fatalError "trModExp:1"
-	  val (env as (rho', depth'), envelope') = trDec env dec
-          val tr_VE = 
-	      foldEnv  (fn id => fn {qualid,info = (_,cs)} => fn tr_VE => 
-			case cs of  
-			    VARname _ => 
-				if isGlobalName qualid 
-				    then tr_VE
-				else (translateLocalAccess ValId env id) :: tr_VE 
-			  | EXNname ei => 
-				    if isGlobalName qualid then tr_VE 
-				    else (translateLocalAccess ValId env id) :: tr_VE
-			  | _  => tr_VE (* PRIMname,CONname & REFname cases *) )
-	               [] 
-		       VE                     
-          val tr_FE_VE =  foldEnv (fn id => fn {qualid,...} => fn tr_FE_VE => 
-				  if isGlobalName qualid then
-				      tr_FE_VE
-				  else (translateLocalAccess FunId env id):: tr_FE_VE)
-                                 tr_VE 
-				 FE                     
-          val tr_ME_FE_VE = foldEnv (fn id => fn {qualid,...} => fn tr_ME_FE_VE => 
-				  if isGlobalName qualid then
-				      tr_ME_FE_VE
-				  else (translateLocalAccess ModId env id):: tr_ME_FE_VE)
-                                 tr_FE_VE 
-				 ME                     
+      let val (ME,FE,_,_,VE) =
+               case SofRecStr RS of
+                   STRstr ES => ES
+               | _ => fatalError "trModExp:1"
+          val (env as (rho', depth'), envelope') = trDec env dec
+          val tr_VE =
+              foldEnv  (fn id => fn {qualid,info = (_,cs)} => fn tr_VE =>
+                        case cs of
+                            VARname _ =>
+                                if isGlobalName qualid
+                                    then tr_VE
+                                else (translateLocalAccess ValId env id) :: tr_VE
+                          | EXNname ei =>
+                                    if isGlobalName qualid then tr_VE
+                                    else (translateLocalAccess ValId env id) :: tr_VE
+                          | _  => tr_VE (* PRIMname,CONname & REFname cases *) )
+                       []
+                       VE
+          val tr_FE_VE =  foldEnv (fn id => fn {qualid,...} => fn tr_FE_VE =>
+                                  if isGlobalName qualid then
+                                      tr_FE_VE
+                                  else (translateLocalAccess FunId env id):: tr_FE_VE)
+                                 tr_VE
+                                 FE
+          val tr_ME_FE_VE = foldEnv (fn id => fn {qualid,...} => fn tr_ME_FE_VE =>
+                                  if isGlobalName qualid then
+                                      tr_ME_FE_VE
+                                  else (translateLocalAccess ModId env id):: tr_ME_FE_VE)
+                                 tr_FE_VE
+                                 ME
       in
           envelope' (Lstruct tr_ME_FE_VE)
       end
@@ -1002,64 +1002,64 @@ and trModExp (env as (rho,depth)) (_, (modexp,r)) =
       in envelope(trModExp env'' modexp) end
   | (FUNCTORmodexp(_,(_,funid),ref FUNik,_,modexp),SOME _) =>
       Lfn(trModExp (bindInEnv rho (FunId funid) (Path_local depth),
-                    depth+1) 
+                    depth+1)
                    modexp)
   | (FUNCTORmodexp(_,(_,strid),ref STRik,_,modexp),SOME _) =>
       Lfn(trModExp (bindInEnv rho (ModId strid) (Path_local depth),
-                    depth+1) 
+                    depth+1)
                    modexp)
 (*  | (APPmodexp (funmodexp,modexp), SOME _) =>
-        (case funmodexp of 
+        (case funmodexp of
              (_,(_,ref (SOME (EXISTSexmod(_,FUNmod(T,M,X)))))) =>
-		     Lapply(trModExp env funmodexp,                                           
-			    [trConstrainedModExp env modexp (normMod M)])
+                     Lapply(trModExp env funmodexp,
+                            [trConstrainedModExp env modexp (normMod M)])
         | _ => fatalError "trModExp:2") *)
   | (APPmodexp (funmodexp,modexp), SOME _) =>
-      (case funmodexp of 
-	   (_,(_,ref (SOME (EXISTSexmod(_,FUNmod(T,M,X)))))) =>
-	      (case (isSafeModExp funmodexp, isSafeModExp modexp) of
-		   (true,_) =>
-		       Lapply(trModExp env funmodexp,                                           
-			      [trConstrainedModExp env modexp (normMod M)])
-               |   (false,true) => 
-		       Lapply(trModExp env funmodexp,                                           
-			      [trConstrainedModExp env modexp (normMod M)])
-               |  (false,false) => 
-		       let val (rho,depth) = env 
-		       in
-		       Llet([trModExp env funmodexp,
-			     trConstrainedModExp (rho,depth+ 1) modexp (normMod M)],
-		             Lapply(Lvar 1, [Lvar 0]))                                        
-		       end)
-	 | _ => fatalError "trModExp:2")
+      (case funmodexp of
+           (_,(_,ref (SOME (EXISTSexmod(_,FUNmod(T,M,X)))))) =>
+              (case (isSafeModExp funmodexp, isSafeModExp modexp) of
+                   (true,_) =>
+                       Lapply(trModExp env funmodexp,
+                              [trConstrainedModExp env modexp (normMod M)])
+               |   (false,true) =>
+                       Lapply(trModExp env funmodexp,
+                              [trConstrainedModExp env modexp (normMod M)])
+               |  (false,false) =>
+                       let val (rho,depth) = env
+                       in
+                       Llet([trModExp env funmodexp,
+                             trConstrainedModExp (rho,depth+ 1) modexp (normMod M)],
+                             Lapply(Lvar 1, [Lvar 0]))
+                       end)
+         | _ => fatalError "trModExp:2")
   | (PARmodexp modexp,SOME _) => trModExp env modexp
 (* cvr: unsafe version that works but doesn't check for definedness
   | (RECmodexp((_,strid),ref (SOME RS'),sigexp,modexp),
-	      SOME (EXISTSexmod(_,STRmod RS)))=>
+              SOME (EXISTSexmod(_,STRmod RS)))=>
       Llet([Lprim(Pmakeblock(CONtag(refTag, 1)), [Lconst constUnit])],
-	   Llet([trModExp (bindInEnv rho (ModId strid) (Path_son (0,Path_local depth)),depth+1) modexp],
-		Lseq(Lprim(Psetfield 0,[Lvar 1,coerceRecStr (Lvar 0) RS RS']),
-		     Lvar 0)))
+           Llet([trModExp (bindInEnv rho (ModId strid) (Path_son (0,Path_local depth)),depth+1) modexp],
+                Lseq(Lprim(Psetfield 0,[Lvar 1,coerceRecStr (Lvar 0) RS RS']),
+                     Lvar 0)))
 *)
   | (RECmodexp((_,strid),ref (SOME RS'),sigexp,modexp),
-	      SOME (EXISTSexmod(_,STRmod RS)))=>
-      Llet([Lprim(Pmakeblock(CONtag(refTag, 1)), 
-		  [Lprim(Pmakeblock(CONtag(0, 2)),[Lconst constUnit])])],
-	   Llet([trModExp (bindInEnv rho (ModId strid) (Path_rec depth),depth+1)
-		          modexp],
-		Lseq(Lprim(Psetfield 0,
-			   [Lvar 1,
-			    (Lprim(Pmakeblock(CONtag(1, 2)),
-				   [coerceRecStr (Lvar 0) RS RS']))]),
-		     Lvar 0)))
+              SOME (EXISTSexmod(_,STRmod RS)))=>
+      Llet([Lprim(Pmakeblock(CONtag(refTag, 1)),
+                  [Lprim(Pmakeblock(CONtag(0, 2)),[Lconst constUnit])])],
+           Llet([trModExp (bindInEnv rho (ModId strid) (Path_rec depth),depth+1)
+                          modexp],
+                Lseq(Lprim(Psetfield 0,
+                           [Lvar 1,
+                            (Lprim(Pmakeblock(CONtag(1, 2)),
+                                   [coerceRecStr (Lvar 0) RS RS']))]),
+                     Lvar 0)))
   | (_,_) => fatalError "trModExp:3"
-and trConstrainedModExp env (modexp as (_, (modexp',ref (SOME (EXISTSexmod ((_,M))))))) M' = 
+and trConstrainedModExp env (modexp as (_, (modexp',ref (SOME (EXISTSexmod ((_,M))))))) M' =
     (case (modexp',M,M') of
-	(DECmodexp dec,STRmod RS,STRmod RS') => 
-	    let val (env', envelope') = trDec env dec
-	    in
-		envelope' (coerceDec env' RS RS')
-	    end
+        (DECmodexp dec,STRmod RS,STRmod RS') =>
+            let val (env', envelope') = trDec env dec
+            in
+                envelope' (coerceDec env' RS RS')
+            end
       | _ =>  coerceMod (trModExp env modexp) M M')
   | trConstrainedModExp _ _ _ = fatalError "trConstrainedModExp"
 and tr1ValBind onTop (env as (rho, depth)) (ValBind(ref pat, arg)) =
@@ -1090,7 +1090,7 @@ and trRecValBind (env as (rho, depth)) = fn
       let val pats = map (fn ValBind(ref p, _) => p) vbs
           val args = map (fn ValBind(_, e) => e) vbs
           val (rho', depth') = mkEnvOfRecPats depth pats
-	  val rho'' = mkHashEnv (length pats) rho'
+          val rho'' = mkHashEnv (length pats) rho'
           val new_env = (plusEnv rho rho'', depth')
           val tr_bindings = map (trExp new_env) args
           fun envelope lam = Lletrec(tr_bindings, lam)
@@ -1147,7 +1147,7 @@ fun makeSeq f [] = Lunspec
 
 fun lookupLocalRenEnv asId renEnv id =
   let val mangled_id = mangle (asId id)
-  in 
+  in
     mkUniqueGlobalName (mangled_id, lookup mangled_id renEnv)
     handle Subscript => fatalError "lookupLocalRenEnv"
   end
@@ -1155,7 +1155,7 @@ fun lookupLocalRenEnv asId renEnv id =
 
 fun storeGlobal asId renEnv env var =
   Lprim(Pset_global (lookupLocalRenEnv asId renEnv var),
-          [translateLocalAccess asId env var]) 
+          [translateLocalAccess asId env var])
 ;
 
 
@@ -1215,7 +1215,7 @@ fun trToplevelDec rho (dec as (_, dec')) =
               foldR (fn (vid,(id' as (id, _))) => fn rho =>
                        bindInEnv rho (ValId vid) (Path_global (mkUniqueGlobalName id')))
                     NILenv (zip2 vars renEnv)
-	    val rho'' = mkHashEnv (length vars) rho'
+            val rho'' = mkHashEnv (length vars) rho'
         in
           (rho'',
            LAMtlam(true,
@@ -1225,16 +1225,16 @@ fun trToplevelDec rho (dec as (_, dec')) =
         let val ((rho', depth'), envelope) =
                trValDec true (rho, 0) pvbs rvbs
             val vars = foldEnv (fn (ValId id) => (fn _ => fn vars => id :: vars)
-				|  _ => fatalError "trTopLevelDec:1") 
-		               [] 
-			       rho'
-	    val n = length vars
-	    val rho'' = mkHashEnv n rho'
+                                |  _ => fatalError "trTopLevelDec:1")
+                               []
+                               rho'
+            val n = length vars
+            val rho'' = mkHashEnv n rho'
             val renEnv = map (renameId o mangle o ValId) vars
-	    val renrho = 
-		foldR (fn (vid,(id' as (id,_))) => fn rho =>
-		       bindInEnv rho (ValId vid) (Path_global (mkUniqueGlobalName id')))
-		      NILenv (zip2 vars renEnv)
+            val renrho =
+                foldR (fn (vid,(id' as (id,_))) => fn rho =>
+                       bindInEnv rho (ValId vid) (Path_global (mkUniqueGlobalName id')))
+                      NILenv (zip2 vars renEnv)
         in
           (mkHashEnv n renrho,
            LAMtlam(
@@ -1251,19 +1251,19 @@ fun trToplevelDec rho (dec as (_, dec')) =
     | DATATYPErepdec _ => (NILenv, NILtlam)
     | ABSTYPEdec(dbs, _, dec2) =>
         trToplevelDec rho dec2
-    | EXCEPTIONdec mbs => 
-        let val ((rho',depth'), envelope) = trExBindList (rho,0) mbs 
+    | EXCEPTIONdec mbs =>
+        let val ((rho',depth'), envelope) = trExBindList (rho,0) mbs
             val vars = foldEnv (fn (ValId id) => (fn _ => fn vars => id :: vars)
-				| _ => fatalError "trToplevelDec:3") 
-		               [] 
-			       rho'
-	    val n = length vars
-	    val rho'' = mkHashEnv n rho'
+                                | _ => fatalError "trToplevelDec:3")
+                               []
+                               rho'
+            val n = length vars
+            val rho'' = mkHashEnv n rho'
             val renEnv = map (renameId o mangle o ValId) vars
-	    val renrho = 
-		foldR (fn (eid,(id' as (id,_))) => fn rho =>
-		       bindInEnv rho (ValId eid) (Path_global (mkUniqueGlobalName id')))
-		      NILenv (zip2 vars renEnv)
+            val renrho =
+                foldR (fn (eid,(id' as (id,_))) => fn rho =>
+                       bindInEnv rho (ValId eid) (Path_global (mkUniqueGlobalName id')))
+                      NILenv (zip2 vars renEnv)
         in
           (mkHashEnv n renrho,
            LAMtlam(
@@ -1275,24 +1275,24 @@ fun trToplevelDec rho (dec as (_, dec')) =
         let val (rho' , tlam')  = trToplevelDec rho dec1
             val (rho'', tlam'') = trToplevelDec (plusEnv rho rho') dec2
         in (rho'', SEQtlam(tlam', tlam'')) end
-    | OPENdec longmodidinfos => 
-        let val ((rho',depth'), envelope) = 
-	      trOpenLongModIdInfos (rho,0) longmodidinfos
+    | OPENdec longmodidinfos =>
+        let val ((rho',depth'), envelope) =
+              trOpenLongModIdInfos (rho,0) longmodidinfos
             val vars = foldEnv (fn Id => fn _ => fn vars => Id :: vars) [] rho'
-	    val n = length vars
-	    val rho'' = mkHashEnv n rho'
+            val n = length vars
+            val rho'' = mkHashEnv n rho'
             val renEnv = map (renameId o mangle) vars
-	    val renrho = 
-		foldR (fn (Id,(id' as (id,_))) => fn rho =>
-		       bindInEnv rho Id (Path_global (mkUniqueGlobalName id')))
-		      NILenv (zip2 vars renEnv)
+            val renrho =
+                foldR (fn (Id,(id' as (id,_))) => fn rho =>
+                       bindInEnv rho Id (Path_global (mkUniqueGlobalName id')))
+                      NILenv (zip2 vars renEnv)
         in
           (mkHashEnv n renrho,
            LAMtlam(
              true,
              envelope (makeSeq (fn ValId vid => storeGlobal ValId renEnv (rho'', depth') vid
-				|  ModId mid => storeGlobal ModId renEnv (rho'', depth') mid
-				|  FunId fid => storeGlobal FunId renEnv (rho'', depth') fid)
+                                |  ModId mid => storeGlobal ModId renEnv (rho'', depth') mid
+                                |  FunId fid => storeGlobal FunId renEnv (rho'', depth') fid)
                                (revWithoutDuplicates vars []))))
         end
     | EMPTYdec => (NILenv, NILtlam)
@@ -1301,43 +1301,43 @@ fun trToplevelDec rho (dec as (_, dec')) =
             val (rho'', tlam'') = trToplevelDec (plusEnv rho rho') dec2
         in (plusEnv rho' rho'', SEQtlam(tlam', tlam'')) end
     | FIXITYdec  _ =>  (NILenv, NILtlam)
-    | STRUCTUREdec mbs => 
-        let val ((rho',depth'), envelope) = trModBindList (rho,0) mbs 
+    | STRUCTUREdec mbs =>
+        let val ((rho',depth'), envelope) = trModBindList (rho,0) mbs
             val vars = foldEnv (fn (ModId id) => (fn _ => fn vars => id :: vars)
-				| _ => fatalError "trToplevelDec:4") [] rho'
-	    val n = length vars
-	    val rho'' = mkHashEnv n rho'
+                                | _ => fatalError "trToplevelDec:4") [] rho'
+            val n = length vars
+            val rho'' = mkHashEnv n rho'
             val renEnv = map (renameId o mangle o ModId) vars
-	    val renrho = 
-		foldR (fn (mid,(id' as (id,_))) => fn rho =>
-		       bindInEnv rho (ModId mid) (Path_global (mkUniqueGlobalName id')))
-		      NILenv (zip2 vars renEnv)
+            val renrho =
+                foldR (fn (mid,(id' as (id,_))) => fn rho =>
+                       bindInEnv rho (ModId mid) (Path_global (mkUniqueGlobalName id')))
+                      NILenv (zip2 vars renEnv)
         in
           (mkHashEnv n renrho,
            LAMtlam(
-             all (fn MODBINDmodbind(_, modexp) => isSafeModExp modexp 
-	           | ASmodbind(_,_,exp) => isSafe exp) 
-		 mbs,
+             all (fn MODBINDmodbind(_, modexp) => isSafeModExp modexp
+                   | ASmodbind(_,_,exp) => isSafe exp)
+                 mbs,
              envelope (makeSeq (storeGlobal ModId renEnv (rho'', depth'))
                                (revWithoutDuplicates vars []))))
         end
-    | FUNCTORdec fbs => 
-        let val ((rho',depth'), envelope) = trFunBindList (rho,0) fbs 
+    | FUNCTORdec fbs =>
+        let val ((rho',depth'), envelope) = trFunBindList (rho,0) fbs
             val vars = foldEnv (fn (FunId id) => (fn _ => fn vars => id :: vars)
-				| _ => fatalError "trToplevelDec:5") [] rho'
-	    val n = length vars
-	    val rho'' = mkHashEnv n rho'
+                                | _ => fatalError "trToplevelDec:5") [] rho'
+            val n = length vars
+            val rho'' = mkHashEnv n rho'
             val renEnv = map (renameId o mangle o FunId) vars
-	    val renrho = 
-		foldR (fn (funid,(id' as (id,_))) => fn rho =>
-		       bindInEnv rho (FunId funid) (Path_global (mkUniqueGlobalName id')))
-		      NILenv (zip2 vars renEnv)
+            val renrho =
+                foldR (fn (funid,(id' as (id,_))) => fn rho =>
+                       bindInEnv rho (FunId funid) (Path_global (mkUniqueGlobalName id')))
+                      NILenv (zip2 vars renEnv)
         in
           (mkHashEnv n renrho,
            LAMtlam(
-             all (fn FUNBINDfunbind (_,modexp) => isSafeModExp modexp 
-	           | ASfunbind(_,_,exp) => isSafe exp)
-		 fbs,         
+             all (fn FUNBINDfunbind (_,modexp) => isSafeModExp modexp
+                   | ASfunbind(_,_,exp) => isSafe exp)
+                 fbs,
              envelope (makeSeq (storeGlobal FunId renEnv (rho'', depth'))
                                (revWithoutDuplicates vars []))))
         end

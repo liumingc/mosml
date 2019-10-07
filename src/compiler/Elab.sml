@@ -36,82 +36,82 @@ fun typeClash tau1 tau2 reason =
   under_binder 
   (fn (tau1,tau2,reason) =>
     let fun isEqVar tau = case normType tau of 
-	                       VARt var => #tvEqu (!var)
-			     | _        => false
-	fun isExVar tau = case normType tau of 
-	                       VARt var => isExplicit var
-			     | _        => false
-	fun msgTy tau = 
-	    if (case reason of 
-		    UnifyEquality => true 
-		  | _ => false)
-		andalso isEqVar tau then 
-		(msgString "equality type "; printNextType tau)
-	    else if (case reason of 
-			 UnifyExplicit => true 
-		       | UnifyOther => true
-		       | UnifyEquality => true
-		       | UnifyScope _ => true
-		       | _ => false) 
-		    andalso isExVar tau then 
-		(msgString "explicit type "; printNextType tau)
-	    else 
-		(msgString "type"; msgEOL();
-		 errPrompt "  "; printNextType tau)
+                               VARt var => #tvEqu (!var)
+                             | _        => false
+        fun isExVar tau = case normType tau of 
+                               VARt var => isExplicit var
+                             | _        => false
+        fun msgTy tau = 
+            if (case reason of 
+                    UnifyEquality => true 
+                  | _ => false)
+                andalso isEqVar tau then 
+                (msgString "equality type "; printNextType tau)
+            else if (case reason of 
+                         UnifyExplicit => true 
+                       | UnifyOther => true
+                       | UnifyEquality => true
+                       | UnifyScope _ => true
+                       | _ => false) 
+                    andalso isExVar tau then 
+                (msgString "explicit type "; printNextType tau)
+            else 
+                (msgString "type"; msgEOL();
+                 errPrompt "  "; printNextType tau)
      in
         collectExplicitVars tau1;
-	collectExplicitVars tau2; 
+        collectExplicitVars tau2; 
         msgString " of "; msgTy tau1; msgEOL();
-	errPrompt "cannot have "; msgTy tau2; msgEOL();
-	(case reason of
-	     UnifyCircular => 
-		 (errPrompt "because of circularity"; msgEOL())
-	   | UnifyEquality => ()
+        errPrompt "cannot have "; msgTy tau2; msgEOL();
+        (case reason of
+             UnifyCircular => 
+                 (errPrompt "because of circularity"; msgEOL())
+           | UnifyEquality => ()
            | UnifyExplicit => ()
-	   | UnifyScope (var,TYNAMEsv tn) => 
-		 (errPrompt "because of a scope violation:";
-		  msgEOL();
+           | UnifyScope (var,TYNAMEsv tn) => 
+                 (errPrompt "because of a scope violation:";
+                  msgEOL();
                   errPrompt "the type constructor ";
-		  prTyName false tn;
+                  prTyName false tn;
                   msgString " is a parameter " ;
                   msgEOL();
-		  errPrompt "that is declared within \
-                	    \the scope of ";
-		  prTypeVar var;
-		  msgEOL()) 
-	   | UnifyScope (var,TYPEVARsv tv) => 
-		 (errPrompt "because of a scope violation:";
+                  errPrompt "that is declared within \
+                            \the scope of ";
+                  prTypeVar var;
+                  msgEOL()) 
+           | UnifyScope (var,TYPEVARsv tv) => 
+                 (errPrompt "because of a scope violation:";
                   msgEOL();
                   errPrompt "the type variable ";
-		  prTypeVar tv;
+                  prTypeVar tv;
                   msgString " is a parameter " ;
                   msgEOL();
-		  errPrompt "that is declared within \
-                	    \the scope of ";
-		  prTypeVar var;
-		  msgEOL())
-	   | UnifyTup      => 
-		 (errPrompt "because the tuple has the\
-		             \ wrong number of components"; 
-		  msgEOL())
-	   | UnifyRec lab  => 
-		 (errPrompt "because record label  "; 
-		  printLab lab; msgString "  is missing"; msgEOL())
+                  errPrompt "that is declared within \
+                            \the scope of ";
+                  prTypeVar var;
+                  msgEOL())
+           | UnifyTup      => 
+                 (errPrompt "because the tuple has the\
+                             \ wrong number of components"; 
+                  msgEOL())
+           | UnifyRec lab  => 
+                 (errPrompt "because record label  "; 
+                  printLab lab; msgString "  is missing"; msgEOL())
            | UnifyMod (reasonopt,reasonopt') =>
-		 (case reasonopt of 
-		       NONE => () 
-		     | SOME reason => 
-			   (errPrompt "because the first module type \
-			               \does not match the second module type ...";
-			    msgEOL();
-			    errMatchReason "first module type" "second module type" reason);
-		   case reasonopt' of 
-		       NONE => () 
-		     | SOME reason => 
-			   (errPrompt "because the second module type \
-			               \does not match the first module type ...";
-			    msgEOL();
-			    errMatchReason "second module type" "first module type" reason))
+                 (case reasonopt of 
+                       NONE => () 
+                     | SOME reason => 
+                           (errPrompt "because the first module type \
+                                       \does not match the second module type ...";
+                            msgEOL();
+                            errMatchReason "first module type" "second module type" reason);
+                   case reasonopt' of 
+                       NONE => () 
+                     | SOME reason => 
+                           (errPrompt "because the second module type \
+                                       \does not match the first module type ...";
+                            msgEOL();
+                            errMatchReason "second module type" "first module type" reason))
            | UnifyOther  => ())
     end)
   (tau1,tau2,reason);
@@ -317,15 +317,15 @@ and unguardedDec (_, dec') =
 (* cvr: TODO review *)
   | FUNdec (ref (RESfundec dec)) => unguardedDec dec
   | TYPEdec tbds => 
-	U_map unguardedTypBind tbds
+        U_map unguardedTypBind tbds
   | PRIM_TYPEdec _ => []
   | DATATYPEdec (dbds,SOME tbds) => 
-	(U_map unguardedDatBind dbds) U 
-	(U_map unguardedTypBind tbds)
+        (U_map unguardedDatBind dbds) U 
+        (U_map unguardedTypBind tbds)
   | DATATYPEdec (dbds,NONE) => 
- 	 U_map unguardedDatBind dbds
+          U_map unguardedDatBind dbds
   | DATATYPErepdec (tycon, tyconpath) =>       
-	 unguardedTyConPath tyconpath
+         unguardedTyConPath tyconpath
   | ABSTYPEdec(dbds,SOME tbds,dec) =>
       (U_map unguardedDatBind dbds) U 
       (U_map unguardedTypBind tbds) U 
@@ -386,22 +386,22 @@ and unguardedFunBind (FUNBINDfunbind(funid,modexp)) =
 and unguardedModExp (_,(modexp,_)) = 
     case modexp of
       DECmodexp dec => 
-	  unguardedDec dec
+          unguardedDec dec
    | LONGmodexp _ => []
    | LETmodexp (dec,modexp) =>
-	  unguardedDec dec U unguardedModExp modexp
+          unguardedDec dec U unguardedModExp modexp
    | PARmodexp modexp => 
-	  unguardedModExp modexp
+          unguardedModExp modexp
    | CONmodexp (modexp,sigexp) =>
-	  unguardedModExp modexp U unguardedSigExp sigexp
+          unguardedModExp modexp U unguardedSigExp sigexp
    | ABSmodexp (modexp,sigexp) =>
-	  unguardedModExp modexp U unguardedSigExp sigexp
+          unguardedModExp modexp U unguardedSigExp sigexp
    | FUNCTORmodexp (_,modid,_, sigexp, modexp) =>
-	  unguardedSigExp sigexp U unguardedModExp modexp 
+          unguardedSigExp sigexp U unguardedModExp modexp 
    | APPmodexp (modexp,modexp') =>
-	  unguardedModExp modexp U unguardedModExp modexp'           
+          unguardedModExp modexp U unguardedModExp modexp'           
    | RECmodexp (modid,_,sigexp, modexp) =>
-	  unguardedSigExp sigexp U unguardedModExp modexp 
+          unguardedSigExp sigexp U unguardedModExp modexp 
 and unguardedSigExp (_,sigexp) =
   case sigexp of
     SPECsigexp spec => unguardedSpec spec
@@ -478,35 +478,35 @@ fun scopedTyVars loc UE pars unguardedTyVars =
    let val scopedtyvars = map fst UE
    in
        if (!currentCompliance) <> Liberal 
-	   then (app (fn v =>
-		      if member v scopedtyvars
-			  then case !currentCompliance of
-			      Orthodox => 
-				  (msgIBlock 0;
-				   errLocation loc;
-				   errPrompt "Compliance Error: ";msgEOL();
-				   errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
-				   errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
-				   errPrompt "the explicit type variable ";msgEOL();
-				   errPrompt "  "; msgString v;msgEOL();
-				   errPrompt "is already in scope and should not be redeclared";
-				   msgEOL();
-				   msgEBlock();
-				   raise Toplevel)
-			    |  Conservative => 
-				  (msgIBlock 0;
-				   errLocation loc;
-				   errPrompt "Compliance Warning: ";msgEOL();
-				   errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
-				   errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
-				   errPrompt "the explicit type variable ";msgEOL();
-				   errPrompt "  "; msgString v;msgEOL();
-				   errPrompt "is already in scope and should not be redeclared";
-				   msgEOL();
-				   msgEBlock())
-			    | _  => ()
-		      else ())
-	       pars)
+           then (app (fn v =>
+                      if member v scopedtyvars
+                          then case !currentCompliance of
+                              Orthodox => 
+                                  (msgIBlock 0;
+                                   errLocation loc;
+                                   errPrompt "Compliance Error: ";msgEOL();
+                                   errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
+                                   errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
+                                   errPrompt "the explicit type variable ";msgEOL();
+                                   errPrompt "  "; msgString v;msgEOL();
+                                   errPrompt "is already in scope and should not be redeclared";
+                                   msgEOL();
+                                   msgEBlock();
+                                   raise Toplevel)
+                            |  Conservative => 
+                                  (msgIBlock 0;
+                                   errLocation loc;
+                                   errPrompt "Compliance Warning: ";msgEOL();
+                                   errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
+                                   errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
+                                   errPrompt "the explicit type variable ";msgEOL();
+                                   errPrompt "  "; msgString v;msgEOL();
+                                   errPrompt "is already in scope and should not be redeclared";
+                                   msgEOL();
+                                   msgEBlock())
+                            | _  => ()
+                      else ())
+               pars)
        else ();
        (pars U (list_subtract unguardedTyVars scopedtyvars))
    end
@@ -528,25 +528,25 @@ fun isExpansiveExp (_, exp') =
   | TYPEDexp(exp,_) => isExpansiveExp exp
   | FNexp _         => false
   | RECexp (ref (RECre exprow))    => 
-	exists (fn (_, e) => isExpansiveExp e) exprow
+        exists (fn (_, e) => isExpansiveExp e) exprow
   | RECexp (ref (TUPLEre explist)) =>
-	exists isExpansiveExp explist
+        exists isExpansiveExp explist
   | APPexp((_, VIDPATHexp (ref(RESvidpath ii))), exp) =>
-	isExpansiveExp exp orelse
-	let val {info = {idKind, ...}, ...} = ii
-	in case !idKind of
-	    {info = CONik _, qualid = {id, qual}} => id = ["ref"]
-	  | {info = EXCONik _, ...}               => false
-	  | _                                     => true
-	end 
+        isExpansiveExp exp orelse
+        let val {info = {idKind, ...}, ...} = ii
+        in case !idKind of
+            {info = CONik _, qualid = {id, qual}} => id = ["ref"]
+          | {info = EXCONik _, ...}               => false
+          | _                                     => true
+        end 
   | APPexp((_,VIDPATHexp (ref(OVLvidpath(ii,_,_)))),exp) =>
-	isExpansiveExp exp orelse
-	let val {info = {idKind, ...}, ...} = ii
-	in case !idKind of
-	    {info = CONik _, qualid = {id, qual}} => id = ["ref"]
-	  | {info = EXCONik _, ...}               => false
-	  | _                                     => true
-	end 
+        isExpansiveExp exp orelse
+        let val {info = {idKind, ...}, ...} = ii
+        in case !idKind of
+            {info = CONik _, qualid = {id, qual}} => id = ["ref"]
+          | {info = EXCONik _, ...}               => false
+          | _                                     => true
+        end 
   | INFIXexp (ref (RESinfixexp e)) => 
       isExpansiveExp e   
   | INFIXexp (ref (UNRESinfixexp _)) => fatalError "isExpansiveExp: unresolved infix exp"
@@ -596,14 +596,14 @@ fun closeValBindVE loc (pvbs: ValBind list) VE =
 fun findAndMentionStrSig loc i = 
     let  val cu = findAndMentionSig loc i 
     in  case modeOfSig cu of 
-	STRmode => cu
+        STRmode => cu
       |	TOPDECmode => (* cvr: TODO in the near future this should be an error, not just a warning *)
-	    ((msgIBlock 0;
-	      errLocation loc;
-	      errPrompt "Warning: this unit was compiled as a sequence of toplevel declarations,";msgEOL();
-	      errPrompt "but is being used as if it had been compiled as a structure.";msgEOL();
-	      msgEBlock());
-	    cu)
+            ((msgIBlock 0;
+              errLocation loc;
+              errPrompt "Warning: this unit was compiled as a sequence of toplevel declarations,";msgEOL();
+              errPrompt "but is being used as if it had been compiled as a structure.";msgEOL();
+              msgEBlock());
+            cu)
     end
 ;
 
@@ -611,87 +611,87 @@ fun findLongModIdForOpen ME loc q =
   case q of 
      {qual, id = []} => fatalError "findLongModIdForOpen"
    | {qual, id = [i] } => 
-	 (let val {qualid,info=RS} = lookupEnv ME i
-	      val S = SofRecStr RS
-	  in
-	      ([],{qualid = qualid,
-		   info =  (MEofStr S, 
-			    FEofStr S, 
-			    NILenv, 
-			    VEofStr S,
-			    TEofStr S)})
-	  end handle Subscript => 
-	      let val i = normalizedUnitName i (* cvr: REVIEW *)
-	      in
-		  if i = #uName(!currentSig) then
-		      (msgIBlock 0;
-		       errLocation loc;
-		       errPrompt "the free structure identifier may not refer to the current unit: ";
-		       printQualId q; msgEOL();
-		       msgEBlock();
-		       raise Toplevel)
-		  else
-		      let val cu = findAndMentionStrSig loc i (* cvr: REVIEW maybe findAndMention? *)
-		      in
-			  ([],{qualid = {qual = i,id = []},
-			       info = (bindTopInEnv NILenv (#uModEnv cu), 
-				       bindTopInEnv NILenv (#uFunEnv cu), 
-				       bindTopInEnv NILenv (#uSigEnv cu), 
-				       bindTopInEnv NILenv (#uVarEnv cu),
-				       bindTopInEnv NILenv (#uTyEnv cu))
-			       })
-		      end
-	      end)
+         (let val {qualid,info=RS} = lookupEnv ME i
+              val S = SofRecStr RS
+          in
+              ([],{qualid = qualid,
+                   info =  (MEofStr S, 
+                            FEofStr S, 
+                            NILenv, 
+                            VEofStr S,
+                            TEofStr S)})
+          end handle Subscript => 
+              let val i = normalizedUnitName i (* cvr: REVIEW *)
+              in
+                  if i = #uName(!currentSig) then
+                      (msgIBlock 0;
+                       errLocation loc;
+                       errPrompt "the free structure identifier may not refer to the current unit: ";
+                       printQualId q; msgEOL();
+                       msgEBlock();
+                       raise Toplevel)
+                  else
+                      let val cu = findAndMentionStrSig loc i (* cvr: REVIEW maybe findAndMention? *)
+                      in
+                          ([],{qualid = {qual = i,id = []},
+                               info = (bindTopInEnv NILenv (#uModEnv cu), 
+                                       bindTopInEnv NILenv (#uFunEnv cu), 
+                                       bindTopInEnv NILenv (#uSigEnv cu), 
+                                       bindTopInEnv NILenv (#uVarEnv cu),
+                                       bindTopInEnv NILenv (#uTyEnv cu))
+                               })
+                      end
+              end)
    | _ =>  let val (fields,{qualid,info=RS}) = findLongModId ME loc q
-	       val S = SofRecStr RS
-	   in
-	       (fields,{qualid = qualid,
-			info =  (MEofStr S, 
-				 FEofStr S, 
-				 NILenv, 
-				 VEofStr S,
-				 TEofStr S)})
-	   end
+               val S = SofRecStr RS
+           in
+               (fields,{qualid = qualid,
+                        info =  (MEofStr S, 
+                                 FEofStr S, 
+                                 NILenv, 
+                                 VEofStr S,
+                                 TEofStr S)})
+           end
 and findLongModId ME loc q =
   case q of 
      {qual, id = []} => fatalError "findLongModId"  
   |  {qual, id = [i] } => 
-	 (let val modglobal = lookupEnv ME i
-	  in ([],modglobal)
-	  end handle Subscript => 
-	      let val i = normalizedUnitName i (* cvr: REVIEW *)
-	      in
-		  if i = #uName(!currentSig) then
-		      (msgIBlock 0;
-		       errLocation loc;
-		       errPrompt  "the free structure identifier may not refer to the current unit: ";
-		       printQualId q; msgEOL();
-		       msgEBlock();
-		       raise Toplevel)
-		  else
-		      let val cu = findAndMentionStrSig loc i
-		      in
-			  ([],{qualid = {qual = i,id = []},
-			       info =
-			         NONrec  (STRstr(bindTopInEnv NILenv (#uModEnv cu), 
-					     bindTopInEnv NILenv (#uFunEnv cu), 
-					     bindTopInEnv NILenv (#uSigEnv cu), 
-					     bindTopInEnv NILenv (#uTyEnv cu), 
-					     bindTopInEnv NILenv (#uVarEnv cu)))
-			       })
-		      end
-	      end)
+         (let val modglobal = lookupEnv ME i
+          in ([],modglobal)
+          end handle Subscript => 
+              let val i = normalizedUnitName i (* cvr: REVIEW *)
+              in
+                  if i = #uName(!currentSig) then
+                      (msgIBlock 0;
+                       errLocation loc;
+                       errPrompt  "the free structure identifier may not refer to the current unit: ";
+                       printQualId q; msgEOL();
+                       msgEBlock();
+                       raise Toplevel)
+                  else
+                      let val cu = findAndMentionStrSig loc i
+                      in
+                          ([],{qualid = {qual = i,id = []},
+                               info =
+                                 NONrec  (STRstr(bindTopInEnv NILenv (#uModEnv cu), 
+                                             bindTopInEnv NILenv (#uFunEnv cu), 
+                                             bindTopInEnv NILenv (#uSigEnv cu), 
+                                             bindTopInEnv NILenv (#uTyEnv cu), 
+                                             bindTopInEnv NILenv (#uVarEnv cu)))
+                               })
+                      end
+              end)
  | {qual, id = i::id} =>
      let val (fields,{qualid = {qual = qual',id = id'}, info = RS}) = findLongModId ME loc {qual = qual , id = id}
      in 
-	 let val (field,modglobal) = lookupMEofStr (SofRecStr RS) i  
-	 in if isGlobalName (#qualid modglobal) 
-	    then ([],modglobal) 
-	    else (field::fields,
-		  {qualid = {qual = qual', id = i::id'},
-		   info = #info modglobal})
-	 end handle Subscript => 
-	     errorMsg loc ("Unbound structure component: "^(showQualId q))
+         let val (field,modglobal) = lookupMEofStr (SofRecStr RS) i  
+         in if isGlobalName (#qualid modglobal) 
+            then ([],modglobal) 
+            else (field::fields,
+                  {qualid = {qual = qual', id = i::id'},
+                   info = #info modglobal})
+         end handle Subscript => 
+             errorMsg loc ("Unbound structure component: "^(showQualId q))
      end
 ;
 
@@ -700,21 +700,21 @@ fun findLongVId ME VE loc q =
   case q of 
     {qual, id = []} => fatalError "findLongVId"
  |  {qual, id = [i] } => 
-	(([],lookupEnv VE i)
-	 handle Subscript => 
-	     errorMsg loc ("Unbound value identifier: "^(showQualId q)))
+        (([],lookupEnv VE i)
+         handle Subscript => 
+             errorMsg loc ("Unbound value identifier: "^(showQualId q)))
  | {qual, id = i::id} =>
-	let val (fields,{qualid = {qual = qual', id = id'},info = RS}) = 
-	    findLongModId ME loc {qual = qual , id = id}
-	in 
-	    let val (field,info) = lookupVEofStr (SofRecStr RS) i 
-	    in if isGlobalName (#qualid info)
-	       then ([],info) (* inline globals *)	
-	       else (field::fields,
-		     {qualid = {qual = qual', id = i::id'},
-		      info = #info info})
-	    end handle Subscript => 
-		errorMsg loc ("Unbound value component: "^(showQualId q))
+        let val (fields,{qualid = {qual = qual', id = id'},info = RS}) = 
+            findLongModId ME loc {qual = qual , id = id}
+        in 
+            let val (field,info) = lookupVEofStr (SofRecStr RS) i 
+            in if isGlobalName (#qualid info)
+               then ([],info) (* inline globals *)	
+               else (field::fields,
+                     {qualid = {qual = qual', id = i::id'},
+                      info = #info info})
+            end handle Subscript => 
+                errorMsg loc ("Unbound value component: "^(showQualId q))
       end
 ;
 
@@ -722,21 +722,21 @@ fun findLongFunId ME FE loc q =
   case q of 
     {qual, id = []} => fatalError "findLongFunId"
  |  {qual, id = [i] } => 
-	(([],lookupEnv FE i)
-	 handle Subscript => 
-	     errorMsg loc ("Unbound functor identifier: "^(showQualId q)))
+        (([],lookupEnv FE i)
+         handle Subscript => 
+             errorMsg loc ("Unbound functor identifier: "^(showQualId q)))
  | {qual, id = i::id} =>
-	let val (fields,{qualid = {qual = qual', id = id'},info = RS}) = 
-	    findLongModId ME loc {qual = qual , id = id}
-	in 
-	    let val (field,info) = lookupFEofStr (SofRecStr RS) i 
-	    in  if isGlobalName (#qualid info)
-		then ([],info) (* inline globals *)	
-		else (field::fields,
-		      {qualid = {qual = qual', id = i::id'},
-		       info = #info info})
-	    end handle Subscript => 
-		errorMsg loc ("Unbound functor component: "^(showQualId q))
+        let val (fields,{qualid = {qual = qual', id = id'},info = RS}) = 
+            findLongModId ME loc {qual = qual , id = id}
+        in 
+            let val (field,info) = lookupFEofStr (SofRecStr RS) i 
+            in  if isGlobalName (#qualid info)
+                then ([],info) (* inline globals *)	
+                else (field::fields,
+                      {qualid = {qual = qual', id = i::id'},
+                       info = #info info})
+            end handle Subscript => 
+                errorMsg loc ("Unbound functor component: "^(showQualId q))
       end
 ;
 
@@ -751,9 +751,9 @@ fun findLongTyCon ME TE loc q =
  | {qual, id = i::id} =>
       let val (_,{info = RS,...}) = findLongModId ME loc {qual = qual, id = id} 
       in
-	  ((lookupEnv (TEofStr (SofRecStr RS)) i) 
-	   handle Subscript => 
-	       errorMsg loc ("Unbound type component: "^(showQualId q)))
+          ((lookupEnv (TEofStr (SofRecStr RS)) i) 
+           handle Subscript => 
+               errorMsg loc ("Unbound type component: "^(showQualId q)))
       end
 ;
 
@@ -764,21 +764,21 @@ fun findLongModIdInStr S loc q =
       (let val (field,modglobal) = lookupMEofStr S i
        in if isGlobalName (#qualid modglobal) 
           then ([],modglobal) 
-	  else ([field],modglobal)
+          else ([field],modglobal)
        end handle Subscript => 
        errorMsg loc ("Unbound structure component: "^(showQualId q)))
  | {qual, id = i::id} =>
      let val (fields,{qualid = {qual = qual',id = id'}, info = RS'}) =
-	 findLongModIdInStr S loc {qual = qual,id = id} 
+         findLongModIdInStr S loc {qual = qual,id = id} 
      in 
-	 let val (field,modglobal) = lookupMEofStr (SofRecStr RS') i  
-	 in if isGlobalName (#qualid modglobal) 
-	    then ([],modglobal) 
-	    else (field::fields,
-		  {qualid = {qual = qual', id = i::id'},
-		   info = #info modglobal})
-	 end handle Subscript => 
-	     errorMsg loc ("Unbound structure component: "^(showQualId q))
+         let val (field,modglobal) = lookupMEofStr (SofRecStr RS') i  
+         in if isGlobalName (#qualid modglobal) 
+            then ([],modglobal) 
+            else (field::fields,
+                  {qualid = {qual = qual', id = i::id'},
+                   info = #info modglobal})
+         end handle Subscript => 
+             errorMsg loc ("Unbound structure component: "^(showQualId q))
      end
 ;
 
@@ -792,9 +792,9 @@ fun findLongTyConInStr S loc q =
  | {qual, id = i::id} =>
       let val (_,{info = RS',...}) = findLongModIdInStr S loc {qual = qual, id = id} 
       in
-	  ((lookupEnv (TEofStr (SofRecStr RS')) i) 
-	   handle Subscript => 
-	       errorMsg loc ("Unbound type component: "^(showQualId q)))
+          ((lookupEnv (TEofStr (SofRecStr RS')) i) 
+           handle Subscript => 
+               errorMsg loc ("Unbound type component: "^(showQualId q)))
       end
 ;
 
@@ -802,38 +802,38 @@ fun findLongTyConInStr S loc q =
 fun findSigId GE loc sigid =
      lookupEnv GE sigid
      handle Subscript => 
-	      let val i = normalizedUnitName sigid  (* cvr: TODO review *)
-	      in
-		  if i = #uName(!currentSig) then
-		      (msgIBlock 0;
-		       errLocation loc;
-		       errPrompt "The free signature identifier may not refer to the current unit: ";
-		       msgString sigid; msgEOL();
-		       msgEBlock();
-		       raise Toplevel)
-		  else
-		      let val cu = findAndMentionStrSig loc i 
-		      (* cvr: TODO review - using the unit's signature 
-		         probably shouldn't imply using its implementation *)
-		      in
-			 case !(strOptOfSig cu) of 
-			     NONE => 
-				 (msgIBlock 0;
-				  errLocation loc;
-				  errPrompt "The signature identifier\
-				  \ refers to a unit interface, \
-				  \ but the unit was not defined \
-				  \ with an explicit signature.";
-				  msgEOL();
-				  msgEBlock();
-				  raise Toplevel)
-			   | SOME RS =>
-				{qualid = {qual = i,id = []},
-				 info = (* cvr: remove copySig [] [] *)
-				 (LAMBDAsig(!(tyNameSetOfSig cu),
-					    STRmod RS))}
-		      end
-	      end
+              let val i = normalizedUnitName sigid  (* cvr: TODO review *)
+              in
+                  if i = #uName(!currentSig) then
+                      (msgIBlock 0;
+                       errLocation loc;
+                       errPrompt "The free signature identifier may not refer to the current unit: ";
+                       msgString sigid; msgEOL();
+                       msgEBlock();
+                       raise Toplevel)
+                  else
+                      let val cu = findAndMentionStrSig loc i 
+                      (* cvr: TODO review - using the unit's signature 
+                         probably shouldn't imply using its implementation *)
+                      in
+                         case !(strOptOfSig cu) of 
+                             NONE => 
+                                 (msgIBlock 0;
+                                  errLocation loc;
+                                  errPrompt "The signature identifier\
+                                  \ refers to a unit interface, \
+                                  \ but the unit was not defined \
+                                  \ with an explicit signature.";
+                                  msgEOL();
+                                  msgEBlock();
+                                  raise Toplevel)
+                           | SOME RS =>
+                                {qualid = {qual = i,id = []},
+                                 info = (* cvr: remove copySig [] [] *)
+                                 (LAMBDAsig(!(tyNameSetOfSig cu),
+                                            STRmod RS))}
+                      end
+              end
 ;
 
 (* Expectations are used by elabModExp to resolve 
@@ -855,30 +855,30 @@ fun reportExpectation expectation ({info = {withOp,...},qualid}:LongModId) =
  case expectation of 
   MODexpected =>
      let val (expected,intended) = 
-	 case withOp of
-	    false => ("structure.","functor")
-	  | true => ("functor.","structure")				    	 in
-	  msgIBlock 0;
+         case withOp of
+            false => ("structure.","functor")
+          | true => ("functor.","structure")				    	 in
+          msgIBlock 0;
           errPrompt "(In this context,\
-		     \ it is assumed that ";
-	     msgEOL();
-	  errPrompt "   ";
-	     (if withOp then msgString "op " else ());
-	     msgString (showQualId qualid);
-	     msgEOL();
-	  errPrompt " refers to a "; msgString expected; msgEOL();
-	  errPrompt " If you actually meant the "; 
-	     msgString intended;
-	     msgString " of the same name,";
-	     msgEOL();
-	  errPrompt " you must use the syntax: ";
-	     msgEOL();
-	  errPrompt "   ";
-	     (if withOp then () else msgString "op ");
-	     msgString (showQualId qualid);
-	     msgEOL();
-	  errPrompt " to indicate this.)";msgEOL();
-	  raise Toplevel
+                     \ it is assumed that ";
+             msgEOL();
+          errPrompt "   ";
+             (if withOp then msgString "op " else ());
+             msgString (showQualId qualid);
+             msgEOL();
+          errPrompt " refers to a "; msgString expected; msgEOL();
+          errPrompt " If you actually meant the "; 
+             msgString intended;
+             msgString " of the same name,";
+             msgEOL();
+          errPrompt " you must use the syntax: ";
+             msgEOL();
+          errPrompt "   ";
+             (if withOp then () else msgString "op ");
+             msgString (showQualId qualid);
+             msgEOL();
+          errPrompt " to indicate this.)";msgEOL();
+          raise Toplevel
       end
   | _ => raise Toplevel
 ;
@@ -938,9 +938,9 @@ fun illegalCon id = illegalVal id orelse id = "it"
 
 fun checkRebinding illegal ({qualid={id=lid, ...}, info = {idLoc, ...}} : IdInfo) =
     if illegal (longIdentAsIdent lid "checkRebinding") then
-	errorMsg idLoc "Illegal rebinding or respecification"
+        errorMsg idLoc "Illegal rebinding or respecification"
     else
-	();
+        ();
 
 fun checkAsPatSource (loc, pat') =
   case pat' of
@@ -997,31 +997,31 @@ fun checkAllIdsIn loc [] iis desc = ()
     (if exists (fn (ii':IdInfo) => [v] = #id(#qualid ii'))  iis
      then ()
      else (case (!currentCompliance) of
-	       Orthodox => 
-		(msgIBlock 0;
-		 errLocation loc;
-		 errPrompt "Compliance Error: ";msgEOL();
-		 errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
-		 errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
-		 errPrompt "the type variable";msgEOL();
-		 errPrompt "  "; msgString v;msgEOL();
-		 errPrompt "should be a parameter of the ";
-		 msgString desc;msgEOL();
-		 msgEBlock();
-		 raise Toplevel)
-	  |  Conservative => 
-		(msgIBlock 0;
-		 errLocation loc;
-		 errPrompt "Compliance Warning: ";msgEOL();
-		 errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
-		 errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
-		 errPrompt "the type variable";msgEOL();
-		 errPrompt "  "; msgString v;msgEOL();
-		 errPrompt "should be a parameter of the ";
-		 msgString desc;msgEOL();
-		 msgEBlock();
-		 checkAllIdsIn loc (drop (fn v' => v = v') vs) iis desc)
-	  | _  => ()))
+               Orthodox => 
+                (msgIBlock 0;
+                 errLocation loc;
+                 errPrompt "Compliance Error: ";msgEOL();
+                 errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
+                 errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
+                 errPrompt "the type variable";msgEOL();
+                 errPrompt "  "; msgString v;msgEOL();
+                 errPrompt "should be a parameter of the ";
+                 msgString desc;msgEOL();
+                 msgEBlock();
+                 raise Toplevel)
+          |  Conservative => 
+                (msgIBlock 0;
+                 errLocation loc;
+                 errPrompt "Compliance Warning: ";msgEOL();
+                 errPrompt "The phrase, although accepted as a Moscow ML extension,";msgEOL();
+                 errPrompt "is not supported by the Definition of Standard ML:"; msgEOL();
+                 errPrompt "the type variable";msgEOL();
+                 errPrompt "  "; msgString v;msgEOL();
+                 errPrompt "should be a parameter of the ";
+                 msgString desc;msgEOL();
+                 msgEBlock();
+                 checkAllIdsIn loc (drop (fn v' => v = v') vs) iis desc)
+          | _  => ()))
 ;
 
 fun checkTypBind (tyvars, tycon, ty as (loc,_)) =
@@ -1036,8 +1036,8 @@ fun checkDatBind (tyvars, tycon, cbs) =
 (
   app (fn ConBind(ii, SOME (ty as (loc,_))) =>
              (if (!currentCompliance)<> Liberal 
-		  then checkAllIdsIn loc (unguardedTy ty) tyvars "datatype binding"  
-	      else ())
+                  then checkAllIdsIn loc (unguardedTy ty) tyvars "datatype binding"  
+              else ())
         | ConBind(ii, NONE) => ())
        cbs;
   checkDuplIds tyvars
@@ -1057,26 +1057,26 @@ fun checkTypDesc (tyvars, tycon) =
 fun checkApplicativeModExp (_,(modexp,_)) = 
     case modexp of
       DECmodexp dec => 
-	  checkApplicativeDec dec
+          checkApplicativeDec dec
    | LONGmodexp _ => ()
    | LETmodexp (dec,modexp) =>
-	  (checkApplicativeDec dec;
-	   checkApplicativeModExp modexp)
+          (checkApplicativeDec dec;
+           checkApplicativeModExp modexp)
    | PARmodexp modexp => 
-	  checkApplicativeModExp modexp
+          checkApplicativeModExp modexp
    | CONmodexp (modexp,sigexp) =>
-	  checkApplicativeModExp modexp
+          checkApplicativeModExp modexp
    | ABSmodexp (modexp,sigexp) =>
-	  checkApplicativeModExp modexp
+          checkApplicativeModExp modexp
    | FUNCTORmodexp (_,modid,_, sigexp, modexp) =>
-	  ()
+          ()
           (* checkApplicativeModExp modexp is already ensured by the
              elaboration of modexp *)
    | APPmodexp (modexp,modexp') =>
-	  (checkApplicativeModExp modexp;
-	   checkApplicativeModExp modexp')
+          (checkApplicativeModExp modexp;
+           checkApplicativeModExp modexp')
    | RECmodexp (modid,_,sigexp, modexp) =>
-	  checkApplicativeModExp modexp 
+          checkApplicativeModExp modexp 
 and checkApplicativeDec (loc,dec') = 
   case dec' of
     ABSTYPEdec(_, _, dec2) =>
@@ -1087,17 +1087,17 @@ and checkApplicativeDec (loc,dec') =
       (checkApplicativeDec dec1;checkApplicativeDec dec2)
   | STRUCTUREdec mbs => 
       app (fn ASmodbind ((loc,_),_,_) =>
-	        errorMsg loc "Illegal structure binding: \
-		             \a structure value cannot be opened in a functor body"
-	   | MODBINDmodbind (_,modexp') => 
-		checkApplicativeModExp modexp')
+                errorMsg loc "Illegal structure binding: \
+                             \a structure value cannot be opened in a functor body"
+           | MODBINDmodbind (_,modexp') => 
+                checkApplicativeModExp modexp')
            mbs
   | FUNCTORdec fbs => 
       app (fn ASfunbind ((loc,_),_,_) =>
-	        errorMsg loc "Illegal functor binding: \
-		             \a functor value cannot be opened in a functor body"
-	   | FUNBINDfunbind (_,modexp') => 
-		checkApplicativeModExp modexp')
+                errorMsg loc "Illegal functor binding: \
+                             \a functor value cannot be opened in a functor body"
+           | FUNBINDfunbind (_,modexp') => 
+                checkApplicativeModExp modexp')
            fbs
   | _ => ()
 ;
@@ -1110,18 +1110,18 @@ and checkApplicativeFun loc (forall,dom,(EXISTSexmod(exists,rng))) =
      case exists of 
        [] => checkApplicativeMod loc rng
      | _ => errorMsg loc "Illegal applicative functor argument: \
-		   \the signature specifies a generative functor \
-		   \in a positive position"
+                   \the signature specifies a generative functor \
+                   \in a positive position"
 and checkApplicativeRecStr loc (RECrec(fwd,bdy)) = 
     checkApplicativeRecStr loc bdy
 |   checkApplicativeRecStr loc (NONrec str) =
     checkApplicativeStr loc str
 and checkApplicativeStr loc (STRstr (ME,FE,GE,TE,VE)) =
     (traverseEnv (fn modid => fn {info=recstr,...} =>
-		    checkApplicativeRecStr loc recstr)
+                    checkApplicativeRecStr loc recstr)
      ME;
      traverseEnv (fn funid => fn {info=F,...} =>
-		    checkApplicativeFun loc F) 
+                    checkApplicativeFun loc F) 
      FE)
 |   checkApplicativeStr loc (SEQstr(S1,S2)) =
     (checkApplicativeStr loc S1;
@@ -1140,36 +1140,36 @@ local
 (* cvr: TODO share code *)
 fun checkNoRebindingsTyEnv loc ids VE msg = 
        foldEnv (fn id => fn _ =>  fn ids => 
-		if member id ids
-		    then (errorMsg loc 
-			  ("Illegal rebinding of type constructor "^id^": "^msg))
-		else id::ids) ids VE 
+                if member id ids
+                    then (errorMsg loc 
+                          ("Illegal rebinding of type constructor "^id^": "^msg))
+                else id::ids) ids VE 
 and checkNoRebindingsModEnv loc modids ME msg = 
        foldEnv (fn id => fn _ =>  fn ids => 
-		if member id ids
-		    then errorMsg loc ("Illegal rebinding of structure identifier "^id^": "^msg)
-		else id::ids) modids ME 
+                if member id ids
+                    then errorMsg loc ("Illegal rebinding of structure identifier "^id^": "^msg)
+                else id::ids) modids ME 
 and checkNoRebindingsVarEnv  loc vids VE msg = 
        foldEnv (fn id => fn _ =>  fn ids =>
-		if member id ids
-		    then errorMsg loc ("Illegal rebinding of value identifier "^id^": "^msg) 
-		else id::ids) vids VE 
+                if member id ids
+                    then errorMsg loc ("Illegal rebinding of value identifier "^id^": "^msg) 
+                else id::ids) vids VE 
 and checkNoRebindingsFunEnv  loc funids FE msg = 
        foldEnv (fn id => fn _ =>  fn ids =>
-		if member id ids
-		    then errorMsg loc ("Illegal rebinding of functor identifier "^id^": "^msg)
-		else id::ids) funids FE 
+                if member id ids
+                    then errorMsg loc ("Illegal rebinding of functor identifier "^id^": "^msg)
+                else id::ids) funids FE 
 and checkNoRebindingsSigEnv loc sigids GE msg = 
        foldEnv (fn id => fn _ =>  fn ids =>
-		if member id ids
-		    then errorMsg loc ("Illegal rebinding of signature identifier "^id^": "^msg)
-		else id::ids) sigids GE 
+                if member id ids
+                    then errorMsg loc ("Illegal rebinding of signature identifier "^id^": "^msg)
+                else id::ids) sigids GE 
 and checkNoRebindingsStr loc (modids,funids,sigids,tycons,vids) S msg = 
     case S of 
        STRstr (ME,FE,GE,TE,VE) =>
         (checkNoRebindingsModEnv loc modids ME msg,
-	 checkNoRebindingsFunEnv loc funids FE msg,
-	 checkNoRebindingsSigEnv loc sigids GE msg,
+         checkNoRebindingsFunEnv loc funids FE msg,
+         checkNoRebindingsSigEnv loc sigids GE msg,
          checkNoRebindingsTyEnv loc tycons TE msg,
          checkNoRebindingsVarEnv loc vids VE msg)
     |  SEQstr (S,S') => 
@@ -1276,28 +1276,28 @@ fun resolvePatCon ME VE (pat as (loc, pat')) =
 
 fun resolvePatConRec ME VE (pat as (loc, pat')) =
     case pat' of
-	VARpat ii =>
-	    let val {qualid, info} = ii
-	    in
-		if #qual qualid <> "" orelse 
+        VARpat ii =>
+            let val {qualid, info} = ii
+            in
+                if #qual qualid <> "" orelse 
                   case #id qualid of [_] => false | _ => true
-		then
+                then
                  errorMsg (#idLoc info)
                    "Variable names in patterns cannot be qualified"
-		else
-		    (checkRebinding illegalVal ii;
- 		     pat)
-	    end
+                else
+                    (checkRebinding illegalVal ii;
+                      pat)
+            end
       |  WILDCARDpat => 
-	    pat
+            pat
       | PARpat p               => 
-	    (loc, PARpat (resolvePatConRec ME VE p))
+            (loc, PARpat (resolvePatConRec ME VE p))
       | TYPEDpat(p,t)          => 
-	    (loc, TYPEDpat(resolvePatConRec ME VE p, t))
+            (loc, TYPEDpat(resolvePatConRec ME VE p, t))
       | LAYEREDpat(pat1, pat2) => 
-	    (loc, LAYEREDpat(resolvePatConRec ME VE pat1, resolvePatConRec ME VE pat2))
+            (loc, LAYEREDpat(resolvePatConRec ME VE pat1, resolvePatConRec ME VE pat2))
       | INFIXpat (ref (RESinfixpat p)) => 
-	    resolvePatConRec ME VE p
+            resolvePatConRec ME VE p
       (* Other errors will be caught later by Synchk.checkRecFnPat *)
       | _ => errorMsg loc "Ill-formed left hand side in recursive binding";
 
@@ -1309,89 +1309,89 @@ local (* to implement the derived form for structure sharing,
        improved by highlighting the
        location of the longmodid that causes the error *)
     fun update(a,b,m) = (let val bs = lookupEnv m a 
-			 in
-			     bindInEnv m a (b::bs)
+                         in
+                             bindInEnv m a (b::bs)
                          end)
-			handle Subscript  => bindInEnv m a [b];
+                        handle Subscript  => bindInEnv m a [b];
 
     (* We first collect a list of tyname lists which must be identified. *)
 
     fun collect_TE (loc,T0 : TyName list, path, TEs, acc) : TyName list list =
       let val tcmap = foldL (fn TE => fn acc => 
-			     foldEnv (fn tycon => fn tystr => fn acc =>
-				     update(tycon,tystr,acc)) 
-			     acc 
-			     TE) 
-	              NILenv 
+                             foldEnv (fn tycon => fn tystr => fn acc =>
+                                     update(tycon,tystr,acc)) 
+                             acc 
+                             TE) 
+                      NILenv 
                       TEs
 
-	  (* Eliminate entries with less than two component, check
-	   * arities and flexibility of involved tynames. Further,
-	   * extract tynames from type structures. *)
+          (* Eliminate entries with less than two component, check
+           * arities and flexibility of involved tynames. Further,
+           * extract tynames from type structures. *)
 
       in
-	    foldEnv  (fn tycon => fn tystrs => fn acc =>
+            foldEnv  (fn tycon => fn tystrs => fn acc =>
                      case tystrs of 
-			 [] => acc
-		       | [tystr] => acc
+                         [] => acc
+                       | [tystr] => acc
                        | tystrs =>
-			let fun tystr_to_tyname (tyfun,_) =
-			       (choose (equalsTyFunTyName tyfun) T0)
-			       handle Subscript => 
-				   errorMsg loc 
-				       ("Illegal sharing abbreviation: \
-					\the type constructor "^
+                        let fun tystr_to_tyname (tyfun,_) =
+                               (choose (equalsTyFunTyName tyfun) T0)
+                               handle Subscript => 
+                                   errorMsg loc 
+                                       ("Illegal sharing abbreviation: \
+                                        \the type constructor "^
                                         (showQualId {qual="",id=tycon::path})^ 
-					" does not denote an opaque type in each equated structure")
-			    val tynames = map tystr_to_tyname tystrs   
-			    val kind = case tynames of 
-				          tn :: _ => kindTyName tn
-					| _ => fatalError "collect_TE:2"
-			                       (* we know that there are more than zero *)
-			    val _ = app (fn tn => if kindTyName tn = kind 
-						      then
-							  ()
-						  else errorMsg loc 
-						          ("Illegal sharing abbreviation: \
-							   \the type constructor "^ 
-							   (showQualId {qual="",id=tycon::path})^ 
-							   " does not have the same arity in \
-							   \each equated structure"))
+                                        " does not denote an opaque type in each equated structure")
+                            val tynames = map tystr_to_tyname tystrs   
+                            val kind = case tynames of 
+                                          tn :: _ => kindTyName tn
+                                        | _ => fatalError "collect_TE:2"
+                                               (* we know that there are more than zero *)
+                            val _ = app (fn tn => if kindTyName tn = kind 
+                                                      then
+                                                          ()
+                                                  else errorMsg loc 
+                                                          ("Illegal sharing abbreviation: \
+                                                           \the type constructor "^ 
+                                                           (showQualId {qual="",id=tycon::path})^ 
+                                                           " does not have the same arity in \
+                                                           \each equated structure"))
                                          tynames
-			in tynames::acc
-			end) acc tcmap
+                        in tynames::acc
+                        end) acc tcmap
       end
 
     fun collect_S (loc,T0, path, Ss, acc) : TyName list list =
       let val (MEs, TEs) = foldL(fn RS => fn (MEs, TEs) =>
-				      let val S = SofRecStr RS
-					  val ME = MEofStr S
+                                      let val S = SofRecStr RS
+                                          val ME = MEofStr S
                                           val TE = TEofStr S
-				      in (ME::MEs,TE::TEs)
-				      end) ([],[]) Ss
-	  val acc = collect_ME(loc,T0,path, MEs, acc)
+                                      in (ME::MEs,TE::TEs)
+                                      end) ([],[]) Ss
+          val acc = collect_ME(loc,T0,path, MEs, acc)
       in collect_TE(loc,T0, path, TEs, acc)
       end
 
     and collect_ME (loc, T0, path, MEs, acc) : TyName list list =
       let val smap = foldL (fn ME => 
-			    fn acc => 
-			    foldEnv (fn modid =>
-				     fn {qualid,info=S} =>
-				     fn acc => 
-				     update(modid,S,acc)
-				     )
-			            acc 
-				    ME) 
-	                    NILenv 
-			    MEs
+                            fn acc => 
+                            foldEnv (fn modid =>
+                                     fn {qualid,info=S} =>
+                                     fn acc => 
+                                     update(modid,S,acc)
+                                     )
+                                    acc 
+                                    ME) 
+                            NILenv 
+                            MEs
       in
-	    foldEnv (fn strid => fn Ss => fn acc => 
+            foldEnv (fn strid => fn Ss => fn acc => 
                         case Ss of
-			   [] => acc  	  (* Eliminate entries with *)
-	                 | [S] => acc     (* less than two components. *)
-			 | Ss => collect_S(loc,T0, strid::path,Ss,acc))
-	    acc smap
+                           [] => acc  	  (* Eliminate entries with *)
+                         | [S] => acc     (* less than two components. *)
+                         | Ss => collect_S(loc,T0, strid::path,Ss,acc))
+            acc smap
       end
 
 
@@ -1401,61 +1401,61 @@ local (* to implement the derived form for structure sharing,
                               | (tn::T') => not(exists (isEqTN tn) T)
                                               andalso emptyIntersection T T'
     fun union T = fn [] => T
-	          |  tn::T' => if exists (isEqTN tn) T 
-				   then union T T' 
-			       else union (tn::T) T'
+                  |  tn::T' => if exists (isEqTN tn) T 
+                                   then union T T' 
+                               else union (tn::T) T'
 
     fun collapse ([], Ts) : TyName list list = Ts
       | collapse (T::Ts, Ts') =
       let fun split ([], no, yes) = (no, yes)
-	    | split (T'::Ts'', no, yes) =
-	      if emptyIntersection T' T then split(Ts'',T'::no, yes)
-	      else split(Ts'',no, T'::yes)
+            | split (T'::Ts'', no, yes) =
+              if emptyIntersection T' T then split(Ts'',T'::no, yes)
+              else split(Ts'',no, T'::yes)
       in case split(Ts,[],[])
-	   of (no, []) => collapse(no, T::Ts')
-	    | (no, yes) => 
-	     let val Tnew = foldL union T yes (*cvr: ?*)
-	     in collapse(Tnew::no, Ts')
-	     end
+           of (no, []) => collapse(no, T::Ts')
+            | (no, yes) => 
+             let val Tnew = foldL union T yes (*cvr: ?*)
+             in collapse(Tnew::no, Ts')
+             end
       end
 
     (* build the realisation *)
 
     fun build T0 Ts : TyName list = 
-	  case Ts of 
-	      [] => []
-	    | (T::Ts) => let val T = (* cvr: re-order T as T0 *)
-		                   foldR (fn tn => fn acc =>
-					  (((choose (isEqTN tn) T)::acc)
-					   handle Subscript => acc))
-				   [] 
-				   T0 
+          case Ts of 
+              [] => []
+            | (T::Ts) => let val T = (* cvr: re-order T as T0 *)
+                                   foldR (fn tn => fn acc =>
+                                          (((choose (isEqTN tn) T)::acc)
+                                           handle Subscript => acc))
+                                   [] 
+                                   T0 
                              val (tn,T') = case T of 
-				             [] => fatalError "build" 
-					   | tn::T' => (tn,T')
-			     val equ = foldR (fn tn => fn equ => 
-					      if (#tnEqu (!(#info tn))) <> FALSEequ 
-						  then TRUEequ (* cvr: TODO should we worry about REFequ? *)
-					      else equ)
-                		       FALSEequ 
-				       T
-			     val _ = setTnEqu (#info tn) equ
-			     val () = app (fn {qualid,info} => setTnSort info (REAts (APPtyfun (NAMEtyapp(tn))))) T'
+                                             [] => fatalError "build" 
+                                           | tn::T' => (tn,T')
+                             val equ = foldR (fn tn => fn equ => 
+                                              if (#tnEqu (!(#info tn))) <> FALSEequ 
+                                                  then TRUEequ (* cvr: TODO should we worry about REFequ? *)
+                                              else equ)
+                                       FALSEequ 
+                                       T
+                             val _ = setTnEqu (#info tn) equ
+                             val () = app (fn {qualid,info} => setTnSort info (REAts (APPtyfun (NAMEtyapp(tn))))) T'
                                        (* cvr: TODO revise - 
-					can't we identify type names
-					just by identifying their info 
-					fields? *)
-			     val T'' = build T0 Ts
-			 in T' @ T''
-			 end
+                                        can't we identify type names
+                                        just by identifying their info 
+                                        fields? *)
+                             val T'' = build T0 Ts
+                         in T' @ T''
+                         end
 in
     fun share (loc,T0:TyName list, Ss : RecStr list) : TyName list =
-	let val Ts = collect_S (loc,T0,[],Ss,[])
-	    val Ts : TyName list list = collapse(Ts,[])
+        let val Ts = collect_S (loc,T0,[],Ss,[])
+            val Ts : TyName list list = collapse(Ts,[])
             val T = build T0 Ts
-	in 
+        in 
            drop (fn t => exists (isEqTN t) T) T0 
-	end
+        end
 end;
 
 val elabModExpRef = 
@@ -1466,26 +1466,26 @@ val elabModExpRef =
 fun elabTyConPath ME FE GE UE VE TE (loc,tyconpath') = 
   case tyconpath' of
       LONGtyconpath longtycon =>
-	  findLongTyCon ME TE loc (#qualid longtycon)
+          findLongTyCon ME TE loc (#qualid longtycon)
     | WHEREtyconpath (longtycon,(_,modid),modexp) =>
-	  let
-	      val EXISTSexmod(T,M) = 
-		  (!elabModExpRef) STRexpected ME FE GE UE VE TE modexp
-	      val S = case M of 
-		  FUNmod _ => errorMsg loc "Illegal projection: this module expression should be\
-		   \ a structure but is actually a functor"
-		| STRmod S => S
+          let
+              val EXISTSexmod(T,M) = 
+                  (!elabModExpRef) STRexpected ME FE GE UE VE TE modexp
+              val S = case M of 
+                  FUNmod _ => errorMsg loc "Illegal projection: this module expression should be\
+                   \ a structure but is actually a functor"
+                | STRmod S => S
               val modidinfo = {qualid =  mkLocalName  modid, info = S} 	                   val tyStr = findLongTyCon (bindInEnv ME modid modidinfo) 
-		                         TE loc (#qualid longtycon)
+                                         TE loc (#qualid longtycon)
               val (fns,_,_) = freeVarsTyStr [] [] ([],[],[]) tyStr 
-	  in
-	      app (fn tn => 
-		   if exists (isEqTN tn) T 
-		       then   errorMsg loc "Illegal projection: this projection\
-		              \ causes an existential type constructor\
-              	              \ to escape its scope"			     		      	   else ()) fns;
+          in
+              app (fn tn => 
+                   if exists (isEqTN tn) T 
+                       then   errorMsg loc "Illegal projection: this projection\
+                              \ causes an existential type constructor\
+                                    \ to escape its scope"			     		      	   else ()) fns;
               tyStr
-	  end;
+          end;
 ;
 
 fun applyTyConPath ME FE GE UE VE TE ((tyconpath as (loc,_)) : TyConPath) ts =
@@ -1502,17 +1502,17 @@ fun applyTyConPath ME FE GE UE VE TE ((tyconpath as (loc,_)) : TyConPath) ts =
           type_subst (zip2 pars ts) body 
 (* cvr: TODO would this improve sharing? *) 
 (*      | TYPEtyfun(pars, body) =>
-	  let val tyname = 
-	     {qualid = {qual="",id = [""]}, 
-	      info = ref {tnKind = ARITYkind arity,
-			 tnEqu = TRUEequ, (* cvr: TODO revise *)
-			 tnSort = REAts tyfun, 
-			 tnStamp = newTyNameStamp(),
-			 tnLevel = currentBindingLevel(),
-			 tnConEnv = ref NONE}}
-	  in
-	      CONt(ts, NAMEtyapp tyname)
-	  end
+          let val tyname = 
+             {qualid = {qual="",id = [""]}, 
+              info = ref {tnKind = ARITYkind arity,
+                         tnEqu = TRUEequ, (* cvr: TODO revise *)
+                         tnSort = REAts tyfun, 
+                         tnStamp = newTyNameStamp(),
+                         tnLevel = currentBindingLevel(),
+                         tnConEnv = ref NONE}}
+          in
+              CONt(ts, NAMEtyapp tyname)
+          end
 *)
 (* cvr: end *)
       | LAMtyfun _ => fatalError "applyTyConpath"
@@ -1540,7 +1540,7 @@ fun elabTy (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE:VarEnv) (TE : TyE
   | PACKty(sigexp) =>
       let val LAMBDAsig (T,M) = (!elabSigExpRef) ME FE GE UE VE TE sigexp 
       in
-	  PACKt (EXISTSexmod(T,M))
+          PACKt (EXISTSexmod(T,M))
       end
   | PARty(ty) =>
       elabTy ME FE GE UE VE TE ty
@@ -1550,7 +1550,7 @@ fun elabSCon (INTscon i,    _     ) = type_int
   | elabSCon (CHARscon c,   _     ) = type_char
   | elabSCon (WORDscon c, tyOptRef) =
     let val ty = VARt (newTypeVar false  false  true)
-	                       (* nonequ nonimp overloaded *)
+                               (* nonequ nonimp overloaded *)
     in tyOptRef := SOME ty; ty end
   | elabSCon (REALscon r,   _     ) = type_real
   | elabSCon (STRINGscon s, _     ) = type_string
@@ -1566,8 +1566,8 @@ fun elabPat (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : 
           let val q =  mkLocalName  id
               val vi = { qualid=q, info=REGULARo }
           in bindOnceInEnv PE (idLoc,id) 
-	      {qualid=q, info= (trivial_scheme pat_t,VARname REGULARo)}
-	      "the same value identifier is bound twice in a pattern"
+              {qualid=q, info= (trivial_scheme pat_t,VARname REGULARo)}
+              "the same value identifier is bound twice in a pattern"
           end
       | {qualid = {id = _,...},...} => fatalError "elabPat: VARpat") 
                                        (* longvid variables are illegal *)
@@ -1615,7 +1615,7 @@ fun elabPat (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : 
       end
   | RECpat(ref (RECrp(fs, dots))) =>
       let val _ = checkRecPat (loc,fs)
-	  val ls = map fst fs
+          val ls = map fst fs
           val ps = map snd fs
           val ts = map (fn _ => newUnknown()) ps
           val fs_t = zip2 ls ts
@@ -1682,12 +1682,12 @@ fun initialDatBindTE (dbs : DatBind list)=
   foldL
     (fn (datbind as (tyvar_list, loctycon as (loc,tycon), _)) => fn (LAMBDA(T,env)) =>
        let val _ = checkDatBind datbind
-	   val tyname = makeTyName tyvar_list tycon 
+           val tyname = makeTyName tyvar_list tycon 
        in
         LAMBDA(tyname::T,
               bindOnceInEnv env loctycon 
-	       (APPtyfun (NAMEtyapp tyname),ConEnv [])
-	       "the same type constructor is bound twice\
+               (APPtyfun (NAMEtyapp tyname),ConEnv [])
+               "the same type constructor is bound twice\
                \ in a datatype declaration or specification")
        end)
     (LAMBDA([],NILenv)) dbs
@@ -1698,13 +1698,13 @@ fun absTE (TE : TyEnv) =
     (fn id => 
       (fn (APPtyfun (NAMEtyapp tyname),ConEnv CE) =>
          let val {info, ...} = tyname in
-	     case !(#tnConEnv(!info)) of
-		 SOME (ConEnv CE) =>
-		     (setTnEqu info FALSEequ;
-		      #tnConEnv(!info):= NONE;
-		      (APPtyfun (NAMEtyapp tyname),ConEnv []))
-	       | _ => fatalError "absTE:1"
-	 end
+             case !(#tnConEnv(!info)) of
+                 SOME (ConEnv CE) =>
+                     (setTnEqu info FALSEequ;
+                      #tnConEnv(!info):= NONE;
+                      (APPtyfun (NAMEtyapp tyname),ConEnv []))
+               | _ => fatalError "absTE:1"
+         end
        | _ => fatalError "absTE:2"))
     TE
 ;
@@ -1731,8 +1731,8 @@ fun elabTypBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
 fun elabTypBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
    (TE : TyEnv) (tbs : TypBind list) =
   foldL_map (fn (locid, tyname) => fn env => 
-	        bindOnceInEnv env locid tyname
-		   "the same type constructor is bound twice in a type declaration")
+                bindOnceInEnv env locid tyname
+                   "the same type constructor is bound twice in a type declaration")
             (elabTypBind ME FE GE UE VE TE) NILenv tbs
 ;
 
@@ -1753,8 +1753,8 @@ fun elabPrimTypBind equ (typdesc as (tyvars, loctycon) : TypDesc) =
 
 fun elabPrimTypBindList equ (tbs : TypDesc list) =
   foldL_map (fn LAMBDA(T',(locid, tystr)) => fn (LAMBDA(T,env)) =>
-	     LAMBDA(T@T',bindOnceInEnv env locid tystr
-		           "The same tycon is bound twice\
+             LAMBDA(T@T',bindOnceInEnv env locid tystr
+                           "The same tycon is bound twice\
                             \ in a prim_type declaration"))
             (elabPrimTypBind equ) (LAMBDA([],NILenv)) tbs
 ;
@@ -1786,7 +1786,7 @@ fun arityOfRecTy (loc, ty') =
 fun elabConBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : TyEnv) tvs res_t = fn
     ConBind(ii, SOME ty) =>
       let val _ = checkRebinding illegalCon ii;
-	  val {qualid, info} = ii
+          val {qualid, info} = ii
           val ci = getConInfo ii
           val _ =  setConArity ci 1   
           val arg_t = (elabTy ME FE GE UE VE TE ty)
@@ -1801,7 +1801,7 @@ fun elabConBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (T
       end
   | ConBind(ii, NONE) =>
       let val _ = checkRebinding illegalCon ii;
-	  val {qualid, info} = ii
+          val {qualid, info} = ii
           val ci = getConInfo ii
           val _ =  setConArity ci 0   
       in
@@ -1838,7 +1838,7 @@ fun maximizeEquality (TE : TyEnv) =
      traverseEnv
        (fn _ => fn tystr =>
          (case tystr of
-	     (APPtyfun (NAMEtyapp tyname),ConEnv CE) =>
+             (APPtyfun (NAMEtyapp tyname),ConEnv CE) =>
                let val {info, ...} = tyname in
                    case #tnEqu(!info) of
                         FALSEequ => ()
@@ -1864,21 +1864,21 @@ fun setTags (cbs : ConBind list) =
           [] => ()
         | (ConBind(ii, _)) :: rest =>
             let val {qualid = {id = lid,...},info} = ii
-		val id = longIdentAsIdent lid "setTags:1"
+                val id = longIdentAsIdent lid "setTags:1"
                 val {idLoc,...} = info
                 val _ = app (fn (ConBind ({qualid = {id = lid',...},info = {idLoc=idLoc',...}},_)) =>
-			        if id = (longIdentAsIdent lid' "setTags:2") then
-				    errorMsg idLoc' "Illegal constructor specification: \ 
-				                     \the constructor cannot be specified twice \ 
-						     \for the same datatype"
-				else ())
+                                if id = (longIdentAsIdent lid' "setTags:2") then
+                                    errorMsg idLoc' "Illegal constructor specification: \ 
+                                                     \the constructor cannot be specified twice \ 
+                                                     \for the same datatype"
+                                else ())
                         rest (* cvr: should this check go elsewhere ? *)
                 val () =
                   if n > maxBlockTag then
                     errorMsg idLoc ("Implementation restriction:\n \
                                     \A datatype cannot declare more than "^
-				    string_of_int (maxBlockTag + 1) ^
-				    " constructors.")
+                                    string_of_int (maxBlockTag + 1) ^
+                                    " constructors.")
                   else ();
                 val ci = mkConInfo() 
                 val q = mkGlobalName id
@@ -1898,8 +1898,8 @@ fun elabDatBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE:Ty
      (datbind as (tyvars, loctycon as (loc,tycon), conbind_list) : DatBind) =
   let val pars = map (fn ii => hd(#id(#qualid ii))) tyvars
       val conbind_list = 
-	  Sort.sort (fn ConBind(ii,_) => fn ConBind(ii',_) =>
-		     hd(#id(#qualid ii))<=hd(#id(#qualid ii'))) conbind_list
+          Sort.sort (fn ConBind(ii,_) => fn ConBind(ii',_) =>
+                     hd(#id(#qualid ii))<=hd(#id(#qualid ii'))) conbind_list
       val () = setTags conbind_list
       val () = incrBindingLevel()
       val vs = map (fn tv => newExplicitTypeVar tv) pars
@@ -1907,8 +1907,8 @@ fun elabDatBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE:Ty
       val UE' = (zip2 pars us) @ UE
       val (tyfun,_) = lookupEnv TE tycon
       val tyname = case tyfun of 
-	              APPtyfun(NAMEtyapp tyname) => tyname
-		   | _ => fatalError "elabDatBind"
+                      APPtyfun(NAMEtyapp tyname) => tyname
+                   | _ => fatalError "elabDatBind"
       val t = type_con us tyname
       val CE = ConEnv (foldR_map cons (elabConBind ME FE GE UE' VE TE vs t) [] conbind_list)
   in
@@ -1920,9 +1920,9 @@ fun elabDatBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE:Ty
 
 fun elabDatBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE : TyEnv) (dbs : DatBind list) =
   foldL_map (fn (VE',(loctycon,tystr)) => fn (VE,TE) => 
-	     (plusEnv VE VE',
-	      bindOnceInEnv TE loctycon tystr 
-	       "The same type constructor is declared twice in a\
+             (plusEnv VE VE',
+              bindOnceInEnv TE loctycon tystr 
+               "The same type constructor is declared twice in a\
                \ datatype declaration"))
             (elabDatBind ME FE GE UE VE TE) (NILenv,NILenv) dbs
 ;
@@ -1930,7 +1930,7 @@ fun elabDatBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (T
 fun elabExBind  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : TyEnv)  = fn
     EXDECexbind(ii, SOME ty) =>
       let val _ = checkRebinding illegalCon ii
-	  val {qualid, info = {idLoc,idKind,...}} = ii
+          val {qualid, info = {idLoc,idKind,...}} = ii
           val id = longIdentAsIdent (#id qualid) "elabExBind"
           val ei = mkExConInfo()
           val q =  mkLocalName  id
@@ -1955,7 +1955,7 @@ fun elabExBind  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (T
       end
   | EXEQUALexbind(ii, ii') =>
       let val _ = checkRebinding illegalCon ii
-	  val {qualid, info={idLoc,idKind,...}} = ii
+          val {qualid, info={idLoc,idKind,...}} = ii
           val id = longIdentAsIdent (#id qualid) "elabDec:EXEQUALexbind"
           val {qualid=qualid', info=info'} = ii'
           val {idLoc=loc', ...} = info'
@@ -1983,8 +1983,8 @@ fun elabExBind  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (T
 
 fun elabExBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : TyEnv)  ebs =
   closeEE (foldL_map (fn (locid, tau) => fn env =>
-		      bindOnceInEnv env locid tau
-		       "The same exception constructor is declared\
+                      bindOnceInEnv env locid tau
+                       "The same exception constructor is declared\
                        \ twice in an exception declaration" )
                      (elabExBind ME FE GE UE VE TE ) NILenv ebs)
 ;
@@ -2022,7 +2022,7 @@ fun elabOvlExp t ovltype =
            type_unit)
     | OVL2EEBo =>
         (setCurrentBindingLevel false t;
-	 makeEquality t;
+         makeEquality t;
          type_arrow (type_pair t t) type_bool)
 ;
 
@@ -2039,10 +2039,10 @@ fun elabExp (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : 
 *)
   | VIDPATHexp (r as (ref (RESvidpath ii))) =>
       let 
-	  val {qualid, info} = ii
-	  val {idKind, idFields,... } = info
+          val {qualid, info} = ii
+          val {idKind, idFields,... } = info
           val (fields,{qualid = csqualid, info = (scheme,cs)}) = 
-	      findLongVId ME VE loc qualid
+              findLongVId ME VE loc qualid
           val tau = specialization(scheme)
       in
         case cs of
@@ -2087,26 +2087,26 @@ fun elabExp (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : 
           (unify arg_t (newUnknownPair())
            handle Unify reason =>
              typeClashExp func func_t (type_arrow (newUnknownPair()) res_t) 
-	                  reason)
+                          reason)
         else ();
         unifyExp exp res_t exp_t;
         elabExp ME FE GE UE VE TE arg arg_t
       end
   | LETexp(dec, body) => 
       let val EXISTS(T,(ME',FE',GE', VE', TE')) =
-	        elabDec ME FE GE UE VE TE   dec 
-	  val () = incrBindingLevel();
+                elabDec ME FE GE UE VE TE   dec 
+          val () = incrBindingLevel();
           val () = refreshTyNameSet PARAMETERts T;
           val tau = 
-	      elabExp (plusEnv ME ME') (plusEnv FE FE') (plusEnv GE GE') UE 
-	          (plusEnv VE VE') (plusEnv TE TE') body exp_t
+              elabExp (plusEnv ME ME') (plusEnv FE FE') (plusEnv GE GE') UE 
+                  (plusEnv VE VE') (plusEnv TE TE') body exp_t
       in  decrBindingLevel()
       end
   | RECexp(ref (RECre fs)) =>
       let val ls = map fst fs
-	  val _ = if duplicates ls then
-	             errorMsg loc "The same label is bound twice in a record expression"
-		  else ()
+          val _ = if duplicates ls then
+                     errorMsg loc "The same label is bound twice in a record expression"
+                  else ()
           val es = map snd fs
           val ts = map (fn _ => newUnknown()) es
           val fs_t = zip2 ls ts
@@ -2167,28 +2167,28 @@ fun elabExp (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : 
   | STRUCTUREexp(modexp,sigexp,r) =>
        let val EXISTSexmod(T,M) = elabModExp STRexpected ME FE GE UE VE TE modexp 
            val _ = case M of STRmod S => ()
-	           |  _ => errorMsg loc 
-	                    "The encapsulated module expression should be\
+                   |  _ => errorMsg loc 
+                            "The encapsulated module expression should be\
                              \ a structure but is actually a functor"
            val LAMBDAsig(T',M') = elabSigExp ME FE GE UE VE TE sigexp
            val _ = case M' of STRmod _ => ()
-	           |  _ => errorMsg loc 
-	                    "The signature expression should specify\
+                   |  _ => errorMsg loc 
+                            "The signature expression should specify\
                              \ a structure but actually specifies a functor" 
        in
            incrBindingLevel();
-	   refreshTyNameSet PARAMETERts T;
+           refreshTyNameSet PARAMETERts T;
            refreshTyNameSet VARIABLEts T';
            (matchMod M M'
-	      handle MatchError matchReason => 
-		  (msgIBlock 0;
-		   errLocation loc;
-		   errPrompt "Signature mismatch: \
-		    \the structure does not match the signature ...";
-		   msgEOL();
-		   msgEBlock();
-		   errMatchReason "structure" "signature" matchReason;
-		   raise Toplevel));
+              handle MatchError matchReason => 
+                  (msgIBlock 0;
+                   errLocation loc;
+                   errPrompt "Signature mismatch: \
+                    \the structure does not match the signature ...";
+                   msgEOL();
+                   msgEBlock();
+                   errMatchReason "structure" "signature" matchReason;
+                   raise Toplevel));
            refreshTyNameSet PARAMETERts T'; (* forget the realisation *)
            decrBindingLevel();
            let val X' = EXISTSexmod(T',normMod M') (* re-introduce the quantifier *)
@@ -2204,28 +2204,28 @@ fun elabExp (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : 
   | FUNCTORexp(modexp,sigexp,r) =>
        let val EXISTSexmod(T,M) = elabModExp FUNexpected ME FE GE UE VE TE modexp
            val _ = case M of FUNmod _ => ()
-	           |  _ => errorMsg loc 
-	                    "The encapsulated module expression should be\
+                   |  _ => errorMsg loc 
+                            "The encapsulated module expression should be\
                              \ a functor but is actually a structure"
            val LAMBDAsig(T',M') = elabSigExp ME FE GE UE VE TE sigexp
            val _ = case M' of FUNmod _ => ()
-	           |  _ => errorMsg loc 
-	                    "The signature expression should specify\
+                   |  _ => errorMsg loc 
+                            "The signature expression should specify\
                              \ a functor but actually specifies a structure" 
        in
            incrBindingLevel();
-	   refreshTyNameSet PARAMETERts T;
+           refreshTyNameSet PARAMETERts T;
            refreshTyNameSet VARIABLEts T';
            (matchMod M M'
-	      handle MatchError matchReason => 
-		  (msgIBlock 0;
-		   errLocation loc;
-		   errPrompt "Signature mismatch: \
-		    \the functor does not match the signature ...";
-		   msgEOL();
-		   msgEBlock();
-		   errMatchReason "functor" "signature" matchReason;
-		   raise Toplevel));
+              handle MatchError matchReason => 
+                  (msgIBlock 0;
+                   errLocation loc;
+                   errPrompt "Signature mismatch: \
+                    \the functor does not match the signature ...";
+                   msgEOL();
+                   msgEBlock();
+                   errMatchReason "functor" "signature" matchReason;
+                   raise Toplevel));
            refreshTyNameSet PARAMETERts T'; (* forget the realisation *)
            decrBindingLevel();
            let val X' = EXISTSexmod(T',normMod M') (* re-introduce the quantifier *)
@@ -2274,7 +2274,7 @@ and elabDatatypeReplication (ME:ModEnv) (FE:FunEnv) (GE:SigEnv)
         (UE:UEnv) (VE:VarEnv) (TE : TyEnv) 
        (loc,((_,tycon),tyconpath)) =
     let val tyStr as (tyfun,CE) =
-	elabTyConPath ME FE GE UE VE TE tyconpath
+        elabTyConPath ME FE GE UE VE TE tyconpath
     in (VEofCE CE,mk1Env tycon tyStr)
     end
 and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
@@ -2282,8 +2282,8 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
   case dec' of
     VALdec (tvs, (pvbs, rvbs)) =>
       let val _ = checkDuplIds tvs "Duplicate explicit type variable"
-	  val pars = map (fn ii => hd(#id(#qualid ii))) tvs
-	  val tyvars = scopedTyVars loc UE pars (unguardedValDec (pvbs, rvbs))
+          val pars = map (fn ii => hd(#id(#qualid ii))) tvs
+          val tyvars = scopedTyVars loc UE pars (unguardedValDec (pvbs, rvbs))
           val ()   = incrBindingLevel()
           val UE'  = incrUE tyvars @ UE
           val VE'  = elabValBind ME FE GE UE' VE TE  pvbs
@@ -2294,20 +2294,20 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
       end
   | PRIM_VALdec (tyvarseq,pbs) => 
        let val _ = checkDuplIds tyvarseq "Duplicate explicit type variable"
-	   val pars = map (fn ii => hd(#id(#qualid ii))) tyvarseq
-	   val tyvars = scopedTyVars loc UE pars (unguardedPrimValBindList pbs)
-	   val () = incrBindingLevel()
+           val pars = map (fn ii => hd(#id(#qualid ii))) tyvarseq
+           val tyvars = scopedTyVars loc UE pars (unguardedPrimValBindList pbs)
+           val () = incrBindingLevel()
            val tvs = map (fn tv => newExplicitTypeVar tv) tyvars
-	   val UE' = (zip2 tyvars (map TypeOfTypeVar tvs)) @ UE
-	   val VE' = 
-	      foldL_map (fn(locid, info) => fn acc => 
-  		           bindOnceInEnv acc locid info
-			     "the same primitive is declared twice\ 
-			      \ in a prim_val declaration")
-			 (elabPrimValBind ME FE GE UE' VE TE tvs)
+           val UE' = (zip2 tyvars (map TypeOfTypeVar tvs)) @ UE
+           val VE' = 
+              foldL_map (fn(locid, info) => fn acc => 
+                             bindOnceInEnv acc locid info
+                             "the same primitive is declared twice\ 
+                              \ in a prim_val declaration")
+                         (elabPrimValBind ME FE GE UE' VE TE tvs)
                          NILenv pbs
        in decrBindingLevel();
- 	  EXISTS([],(NILenv, NILenv, NILenv, VE',NILenv))
+           EXISTS([],(NILenv, NILenv, NILenv, VE',NILenv))
        end
   | FUNdec (ref (UNRESfundec _)) => fatalError "elabDec"
   | FUNdec (ref (RESfundec dec)) => elabDec ME FE GE UE VE TE  dec
@@ -2329,10 +2329,10 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
           val tbsTE = elabTypBindList_opt ME FE GE UE VE (plusEnv TE dbsTE) tbs_opt
           (* Here dbsTE will get destructively updated too. *)
           val _ = checkNoRebindingsTyEnv loc (plusEnv dbsTE tbsTE)
-	             "the same type constructor is defined twice in this datatype declaration"
+                     "the same type constructor is defined twice in this datatype declaration"
           val (VE',dbsTE') = elabDatBindList ME FE GE UE VE (plusEnv (plusEnv TE dbsTE) tbsTE) dbs
           val _ = checkNoRebindingsVarEnv loc VE'
-	             "the same constructor is defined twice in this datatype declaration"
+                     "the same constructor is defined twice in this datatype declaration"
       in
         maximizeEquality dbsTE';
         setEquality tbsTE;
@@ -2351,10 +2351,10 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
           val tbsTE = elabTypBindList_opt ME FE GE UE VE (plusEnv TE dbsTE) tbs_opt
           (* Here dbsTE will get destructively updated too. *)
           val _ = checkNoRebindingsTyEnv loc (plusEnv dbsTE tbsTE)
-	            "the same type constructor is defined twice in this abstype declaration"	      
+                    "the same type constructor is defined twice in this abstype declaration"	      
           val (VE',dbsTE') = elabDatBindList ME FE GE UE VE (plusEnv (plusEnv TE dbsTE) tbsTE) dbs
           val _ = checkNoRebindingsVarEnv loc VE'
-	             "the same constructor is bound twice in this abstype declaration"
+                     "the same constructor is bound twice in this abstype declaration"
           val () = maximizeEquality dbsTE'
           val () = setEquality tbsTE;  
           val EXISTS(T2,(ME2,FE2,GE2,VE2, TE2)) =
@@ -2368,7 +2368,7 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
         in
            setEquality tbsTE; (* cvr: TODO review why is this repeated? *)
            decrBindingLevel();
-	   refreshExEnv(EXISTS(T1@T2,(ME2,FE2,GE2,VE2, plusEnv(plusEnv dbsTE2 tbsTE) TE2)))
+           refreshExEnv(EXISTS(T1@T2,(ME2,FE2,GE2,VE2, plusEnv(plusEnv dbsTE2 tbsTE) TE2)))
         end
         (* cvr: *)
       end
@@ -2376,7 +2376,7 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
      EXISTS([],(NILenv,NILenv,NILenv,(elabExBindList ME FE GE UE VE TE  ebs), NILenv))
   | LOCALdec (dec1, dec2) =>
       let val EXISTS(T',(ME',FE',GE',VE', TE')) = 
-	         refreshExEnv(elabDec ME FE GE UE VE TE  dec1)
+                 refreshExEnv(elabDec ME FE GE UE VE TE  dec1)
           val _ = incrBindingLevel()
           val _ = refreshTyNameSet PARAMETERts T'
           val EXISTS(T'',(ME'', FE'', GE'', VE'',TE'')) =
@@ -2387,24 +2387,24 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
       end
   | OPENdec longmodidinfos =>
   EXISTS([],
-	 foldL (fn (longmodid,envoptref) => fn (ME',FE',GE',VE',TE') =>
-		let val {qualid,info} = longmodid
-		    val {idKind, idFields,idLoc,... } = info
-		    val (fields,{qualid = csqualid, 
-				 info = Env as (ME'',FE'',GE'',VE'',TE'')}) = 
-			findLongModIdForOpen ME idLoc qualid
-		in  
-		    idKind := { qualid=csqualid, info=STRik }; 
-		    idFields := fields;
-		    envoptref := SOME Env;
-		    (plusEnv ME' ME'',
-		     plusEnv FE' FE'',
-		     plusEnv GE' GE'',
-		     plusEnv VE' VE'',
-		     plusEnv TE' TE'')
-		end)
-	 (NILenv,NILenv,NILenv,NILenv,NILenv)
-	 longmodidinfos)
+         foldL (fn (longmodid,envoptref) => fn (ME',FE',GE',VE',TE') =>
+                let val {qualid,info} = longmodid
+                    val {idKind, idFields,idLoc,... } = info
+                    val (fields,{qualid = csqualid, 
+                                 info = Env as (ME'',FE'',GE'',VE'',TE'')}) = 
+                        findLongModIdForOpen ME idLoc qualid
+                in  
+                    idKind := { qualid=csqualid, info=STRik }; 
+                    idFields := fields;
+                    envoptref := SOME Env;
+                    (plusEnv ME' ME'',
+                     plusEnv FE' FE'',
+                     plusEnv GE' GE'',
+                     plusEnv VE' VE'',
+                     plusEnv TE' TE'')
+                end)
+         (NILenv,NILenv,NILenv,NILenv,NILenv)
+         longmodidinfos)
   | EMPTYdec => EXISTS([],(NILenv, NILenv,NILenv,NILenv, NILenv))
   | SEQdec (dec1, dec2) =>
       let val EXISTS(T',(ME',FE',GE',VE', TE')) =
@@ -2414,8 +2414,8 @@ and elabDec (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv)
           val EXISTS(T'',(ME'', FE'', GE'', VE'',TE'')) =
             elabDec (plusEnv ME ME') (plusEnv FE FE') (plusEnv GE GE')  UE (plusEnv VE VE') (plusEnv TE TE')  dec2
       in  (decrBindingLevel();
-	   (*cvr: is this refresh too expensive? *)
-	   refreshExEnv(EXISTS(T'@T'',(plusEnv ME' ME'', plusEnv FE' FE'',plusEnv GE' GE'',plusEnv VE' VE'', plusEnv TE' TE''))))
+           (*cvr: is this refresh too expensive? *)
+           refreshExEnv(EXISTS(T'@T'',(plusEnv ME' ME'', plusEnv FE' FE'',plusEnv GE' GE'',plusEnv VE' VE'', plusEnv TE' TE''))))
       end
   | FIXITYdec _ => EXISTS([],(NILenv,NILenv,NILenv,NILenv,NILenv))
   | STRUCTUREdec mbs => 
@@ -2435,27 +2435,27 @@ and elabModBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
   foldL_map 
       (fn EXISTS(T',(locmodid,M')) => fn (EXISTS(T,ME)) => 
        EXISTS(T@T', bindOnceInEnv ME locmodid M' 
-	               "the same structure identifier is declared twice\ 
+                       "the same structure identifier is declared twice\ 
                        \ in a structure declaration"))
      (elabModBind ME FE GE UE VE TE ) (EXISTS([],NILenv)) mbs
 and elabModBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
    (VE : VarEnv) (TE : TyEnv)  
-	      (MODBINDmodbind (locmodid as (loc,modid),modexp as (loc',_))) = 
+              (MODBINDmodbind (locmodid as (loc,modid),modexp as (loc',_))) = 
     let val EXISTSexmod(T,M) = elabModExp STRexpected ME FE GE UE VE TE modexp
-	val S = case M of 
-	           STRmod S => S
-		 | FUNmod _ => 
-		       errorMsg loc' 
-		       "This module expression is actually a functor \
-			\but should be a structure"
+        val S = case M of 
+                   STRmod S => S
+                 | FUNmod _ => 
+                       errorMsg loc' 
+                       "This module expression is actually a functor \
+                        \but should be a structure"
     in
-	  EXISTS(T,(locmodid,{qualid =  mkLocalName  modid, info = S}))
+          EXISTS(T,(locmodid,{qualid =  mkLocalName  modid, info = S}))
     end
   | elabModBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
    (VE : VarEnv) (TE : TyEnv)  (ASmodbind (locmodid as (loc,modid),sigexp as (loc',_),exp)) = 
   let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE sigexp
       val S = case M of FUNmod _ => errorMsg loc' "This signature should specify a structure but actually specifies a functor"
-	      |  STRmod S => normRecStr S 
+              |  STRmod S => normRecStr S 
       val tau = elabExp ME FE GE UE VE TE exp (PACKt(EXISTSexmod(T,M)))
   in
         EXISTS(T,(locmodid,{qualid =  mkLocalName  modid, info = S})) 
@@ -2465,36 +2465,36 @@ and elabFunBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
   foldL_map 
       (fn EXISTS(T',(locfunid,F')) => fn (EXISTS(T,FE)) => 
        EXISTS(T@T', bindOnceInEnv FE locfunid F'
-	               "the same functor identifier is declared twice\ 
+                       "the same functor identifier is declared twice\ 
                        \ in a functor declaration"))
      (elabFunBind ME FE GE UE VE TE ) (EXISTS([],NILenv)) mbs
 and elabFunBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : TyEnv)  
   (FUNBINDfunbind (locfunid as (loc,funid),modexp as (loc',_))) = 
     let val EXISTSexmod(T,M) = elabModExp FUNexpected ME FE GE UE VE TE modexp
-	val F = case M of 
-		    FUNmod F => F
-	         |  STRmod _ => 
-		       errorMsg loc' 
-		       "This module expression is actually a structure \
-			\but should be a functor"
+        val F = case M of 
+                    FUNmod F => F
+                 |  STRmod _ => 
+                       errorMsg loc' 
+                       "This module expression is actually a structure \
+                        \but should be a functor"
     in
-	  EXISTS(T,(locfunid,{qualid =  mkLocalName  funid, info = F}))
+          EXISTS(T,(locfunid,{qualid =  mkLocalName  funid, info = F}))
     end
 | elabFunBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : TyEnv)  
    (ASfunbind (locfunid as (loc,funid),sigexp as (loc',_),exp)) =  
       let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE sigexp
-	  val F = case M of
-	      STRmod _ => errorMsg loc' "This signature should specify a functor but actually specifies a structure"
-	    |  FUNmod F => F
-	  val tau = elabExp ME FE GE UE VE TE exp (PACKt(EXISTSexmod(T,M)))
+          val F = case M of
+              STRmod _ => errorMsg loc' "This signature should specify a functor but actually specifies a structure"
+            |  FUNmod F => F
+          val tau = elabExp ME FE GE UE VE TE exp (PACKt(EXISTSexmod(T,M)))
       in
-	  EXISTS(T,(locfunid,{qualid =  mkLocalName  funid, info = F}))
+          EXISTS(T,(locfunid,{qualid =  mkLocalName  funid, info = F}))
       end
 and elabSigBindList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
    (VE : VarEnv) (TE : TyEnv)  sbs =
    foldL_map (fn (locsigid,G) => fn GE => 
-	      bindOnceInEnv GE locsigid G
-	       "the same signature identifier is declared twice\ 
+              bindOnceInEnv GE locsigid G
+               "the same signature identifier is declared twice\ 
                 \ in a signature declaration")
              (elabSigBind ME FE GE UE VE TE ) NILenv sbs
 and elabSigBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
@@ -2508,43 +2508,43 @@ and elabModExp expectation (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
   case modexp' of
       DECmodexp dec => 
        let 
-	   val EXISTS(T',(ME',FE',GE',VE',TE')) = elabDec ME FE GE UE VE TE  dec
+           val EXISTS(T',(ME',FE',GE',VE',TE')) = elabDec ME FE GE UE VE TE  dec
            val exmod = EXISTSexmod(T',(STRmod (NONrec (STRstr (sortEnv ME',
-							       sortEnv FE',
-							       NILenv,
-							       sortEnv TE',
-							       sortEnv VE')))))
+                                                               sortEnv FE',
+                                                               NILenv,
+                                                               sortEnv TE',
+                                                               sortEnv VE')))))
        in
            r :=  SOME exmod;
            exmod
        end
    |  LONGmodexp (ii as {info={withOp,...},qualid}) => 
        ((case resolveExpectation(expectation,withOp) of
-	     STRexpected =>
-	       let val {qualid, info} = ii
-		   val {idKind, idFields,... } = info
-		   val (fields,{qualid=resqualid,info=S}) = 
-		       findLongModId ME loc qualid
-		   val X = EXISTSexmod([],STRmod ((* cvr: avoid*) copyRecStr  [] [] S))
-	       in
-		     idKind := {qualid = resqualid, info = STRik};
-		     idFields := fields;
-		     r :=  SOME X;
-		     X
-	       end 
-	   | FUNexpected =>
-	       let val {qualid, info} = ii
-		   val {idKind, idFields,... } = info
-		   val (fields,{qualid=resqualid,info=F}) = 
-		       findLongFunId ME FE loc qualid
-		   val X = EXISTSexmod([],FUNmod ((* cvr: avoid*) copyGenFun  [] [] F))
-	       in
-		   idKind := {qualid = resqualid, info = FUNik};
-		   idFields := fields;
-		   r :=  SOME X;
-		   X
-	       end
-	   | _ => fatalError "elabModExp:resolveExpectation")
+             STRexpected =>
+               let val {qualid, info} = ii
+                   val {idKind, idFields,... } = info
+                   val (fields,{qualid=resqualid,info=S}) = 
+                       findLongModId ME loc qualid
+                   val X = EXISTSexmod([],STRmod ((* cvr: avoid*) copyRecStr  [] [] S))
+               in
+                     idKind := {qualid = resqualid, info = STRik};
+                     idFields := fields;
+                     r :=  SOME X;
+                     X
+               end 
+           | FUNexpected =>
+               let val {qualid, info} = ii
+                   val {idKind, idFields,... } = info
+                   val (fields,{qualid=resqualid,info=F}) = 
+                       findLongFunId ME FE loc qualid
+                   val X = EXISTSexmod([],FUNmod ((* cvr: avoid*) copyGenFun  [] [] F))
+               in
+                   idKind := {qualid = resqualid, info = FUNik};
+                   idFields := fields;
+                   r :=  SOME X;
+                   X
+               end
+           | _ => fatalError "elabModExp:resolveExpectation")
       handle Toplevel => reportExpectation expectation ii)
     | CONmodexp (modexp,sigexp) =>
        let 
@@ -2552,58 +2552,58 @@ and elabModExp expectation (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
            val EXISTSexmod(T,M) = elabModExp (expectMod M') ME FE GE UE VE TE modexp
        in
            incrBindingLevel();
-	   refreshTyNameSet PARAMETERts T;
+           refreshTyNameSet PARAMETERts T;
            refreshTyNameSet VARIABLEts T';
            ((matchMod M M')
-	      handle MatchError matchReason => 
-		  (msgIBlock 0;
-		   errLocation loc;
-		   errPrompt "Signature mismatch: \
-		    \the module does not match the signature ...";
-		   msgEOL();
-		   msgEBlock();
-		   errMatchReason "module" "signature" matchReason; 
-		   raise Toplevel));
+              handle MatchError matchReason => 
+                  (msgIBlock 0;
+                   errLocation loc;
+                   errPrompt "Signature mismatch: \
+                    \the module does not match the signature ...";
+                   msgEOL();
+                   msgEBlock();
+                   errMatchReason "module" "signature" matchReason; 
+                   raise Toplevel));
            decrBindingLevel();
            let val X' = EXISTSexmod(T,normMod M')
            in
-	       r := SOME X'; 
-	       X' 
+               r := SOME X'; 
+               X' 
            end
        end
     | ABSmodexp (modexp,sigexp) =>
        let val LAMBDAsig(T',M') = elabSigExp ME FE GE UE VE TE sigexp 
-	   val EXISTSexmod(T,M) = elabModExp (expectMod M') ME FE GE UE VE TE modexp
+           val EXISTSexmod(T,M) = elabModExp (expectMod M') ME FE GE UE VE TE modexp
        in
            incrBindingLevel();
-	   refreshTyNameSet PARAMETERts T;
+           refreshTyNameSet PARAMETERts T;
            refreshTyNameSet VARIABLEts T';
            ((matchMod M M')
-	      handle MatchError matchReason => 
-		  (msgIBlock 0;
-		   errLocation loc;
-		   errPrompt "Signature mismatch: \
-		    \the module does not match the signature ..."; 
-		   msgEOL();
-		   msgEBlock();
-		   errMatchReason "module" "signature" matchReason; (* cvr: TODO improve descs*)
-		   raise Toplevel));
+              handle MatchError matchReason => 
+                  (msgIBlock 0;
+                   errLocation loc;
+                   errPrompt "Signature mismatch: \
+                    \the module does not match the signature ..."; 
+                   msgEOL();
+                   msgEBlock();
+                   errMatchReason "module" "signature" matchReason; (* cvr: TODO improve descs*)
+                   raise Toplevel));
            refreshTyNameSet PARAMETERts T'; (* forget the realisation *)
            (* cvr: REVIEW forgetting the realisation *only* works if
-	      we haven't done path compression on any realised type names in M that
-	      pointed to T' (usually because of sharing constraints), otherwise
-	      those names won't have their realisations forgotten *)
+              we haven't done path compression on any realised type names in M that
+              pointed to T' (usually because of sharing constraints), otherwise
+              those names won't have their realisations forgotten *)
            decrBindingLevel();
            let val X' = EXISTSexmod(T',normMod M') (* re-introduce the quantifier *)
            in
-	       r := SOME X'; 
-	       X' 
+               r := SOME X'; 
+               X' 
            end
        end
    | LETmodexp (dec, modexp) =>
       let 
-	  val EXISTS(T',(ME',FE',GE',VE', TE')) =
-	      elabDec ME FE GE UE VE TE  dec;
+          val EXISTS(T',(ME',FE',GE',VE', TE')) =
+              elabDec ME FE GE UE VE TE  dec;
           val _ = incrBindingLevel();
           val _ = refreshTyNameSet PARAMETERts T';
           val EXISTSexmod(T'',M) =
@@ -2611,97 +2611,97 @@ and elabModExp expectation (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
       in  decrBindingLevel();
           let val X' = EXISTSexmod(T'@T'',M) (* re-introduce the quantifier *)
           in
-	      r := SOME X'; 
-	      X' 
+              r := SOME X'; 
+              X' 
           end
       end
   | FUNCTORmodexp (Generative standard,(loc,modid),idKindDescRef,sigexp,modexp) =>
       let val _ = checkApplicativeModExp modexp
-	  val LAMBDAsig (T,M) = elabSigExp ME FE GE UE VE TE sigexp
-	  val (ME',FE') = case M of 
-	      STRmod S =>
+          val LAMBDAsig (T,M) = elabSigExp ME FE GE UE VE TE sigexp
+          val (ME',FE') = case M of 
+              STRmod S =>
                   (idKindDescRef := STRik;
-		   (bindInEnv ME modid {qualid=mkLocalName modid,
-					info = normRecStr S},
-		    FE))
-	    | FUNmod F => 
+                   (bindInEnv ME modid {qualid=mkLocalName modid,
+                                        info = normRecStr S},
+                    FE))
+            | FUNmod F => 
                   (idKindDescRef := FUNik;
-		   (ME,
-		    bindInEnv FE modid {qualid=mkLocalName modid,
-					info = F}))
-	  val _ = incrBindingLevel();
-	  val _ = refreshTyNameSet PARAMETERts T;
-	  val X = elabModExp MODexpected ME' FE' GE UE VE TE modexp
+                   (ME,
+                    bindInEnv FE modid {qualid=mkLocalName modid,
+                                        info = F}))
+          val _ = incrBindingLevel();
+          val _ = refreshTyNameSet PARAMETERts T;
+          val X = elabModExp MODexpected ME' FE' GE UE VE TE modexp
       in 
-	  decrBindingLevel();
-	  let val X' = EXISTSexmod([],FUNmod(T,M,X))
-	  in
-	      r := SOME X';
-	      X'
-	  end
+          decrBindingLevel();
+          let val X' = EXISTSexmod([],FUNmod(T,M,X))
+          in
+              r := SOME X';
+              X'
+          end
       end
   | FUNCTORmodexp (Applicative,(loc,modid),idKindDescRef,sigexp as (locsigexp,_),modexp) =>
       let val _ = checkApplicativeModExp modexp
-	  val LAMBDAsig (T,M) = elabSigExp ME FE GE UE VE TE sigexp
-	  val _ = checkApplicativeMod locsigexp M
-	  val (ME',FE') = case M of 
-	      STRmod S =>
+          val LAMBDAsig (T,M) = elabSigExp ME FE GE UE VE TE sigexp
+          val _ = checkApplicativeMod locsigexp M
+          val (ME',FE') = case M of 
+              STRmod S =>
                   (idKindDescRef := STRik;
-		   (bindInEnv ME modid {qualid=mkLocalName modid,
-					info = normRecStr S},
-		    FE))
-	    | FUNmod F => 
+                   (bindInEnv ME modid {qualid=mkLocalName modid,
+                                        info = normRecStr S},
+                    FE))
+            | FUNmod F => 
                   (idKindDescRef := FUNik;
-		   (ME,
-		    bindInEnv FE modid {qualid=mkLocalName modid,
-					info = F}))
-	  val _ = incrBindingLevel(); (* cvr: TODO review *)
-	  val _ = incrBindingLevel();
-	  val _ = refreshTyNameSet PARAMETERts T;
-	  val EXISTSexmod(T',M') = elabModExp MODexpected ME' FE' GE UE VE TE modexp
+                   (ME,
+                    bindInEnv FE modid {qualid=mkLocalName modid,
+                                        info = F}))
+          val _ = incrBindingLevel(); (* cvr: TODO review *)
+          val _ = incrBindingLevel();
+          val _ = refreshTyNameSet PARAMETERts T;
+          val EXISTSexmod(T',M') = elabModExp MODexpected ME' FE' GE UE VE TE modexp
       in 
-	  decrBindingLevel();
-	  let 
+          decrBindingLevel();
+          let 
               val (T'',T'toT'') = parameteriseTyNameSet T' T
-	      val X' = EXISTSexmod(T'',FUNmod(T,M,EXISTSexmod([],copyMod T'toT'' [] M')))
-	  in
-	      decrBindingLevel();
-	      r := SOME X';
-	      X'
-	  end
+              val X' = EXISTSexmod(T'',FUNmod(T,M,EXISTSexmod([],copyMod T'toT'' [] M')))
+          in
+              decrBindingLevel();
+              r := SOME X';
+              X'
+          end
       end
    | APPmodexp (funmodexp as (loc',_),modexp) =>
        let
            val EXISTSexmod(T,M) = elabModExp FUNexpected ME FE GE UE VE TE funmodexp
            val (T',M',X) = case M of 
-	       FUNmod F => copyGenFun [] [] F
-	     | STRmod _ => errorMsg loc' "Illegal application: this module expression \
+               FUNmod F => copyGenFun [] [] F
+             | STRmod _ => errorMsg loc' "Illegal application: this module expression \
                                             \is a structure but should be a functor"
            val EXISTSexmod(T'',M'') = elabModExp (expectMod M') ME FE GE UE VE TE modexp
 
        in
            incrBindingLevel();
-	   refreshTyNameSet PARAMETERts T;
+           refreshTyNameSet PARAMETERts T;
            refreshTyNameSet VARIABLEts T';
-	   refreshTyNameSet PARAMETERts T'';
+           refreshTyNameSet PARAMETERts T'';
            (matchMod M'' M'
-	      handle MatchError matchReason => 
-		  (msgIBlock 0;
-		   errLocation loc;
-		   errPrompt "Signature mismatch: \
-		    \the argument module does not match the functor's domain ...";
-		   msgEOL();
-		   msgEBlock();
-		   errMatchReason "actual argument" "formal argument" matchReason;
-		   raise Toplevel));
+              handle MatchError matchReason => 
+                  (msgIBlock 0;
+                   errLocation loc;
+                   errPrompt "Signature mismatch: \
+                    \the argument module does not match the functor's domain ...";
+                   msgEOL();
+                   msgEBlock();
+                   errMatchReason "actual argument" "formal argument" matchReason;
+                   raise Toplevel));
            decrBindingLevel();
            let val X' = let val EXISTSexmod(T''',M''') = X
-			in
-			   EXISTSexmod(T@T''@T''',normMod M''')
-			end
+                        in
+                           EXISTSexmod(T@T''@T''',normMod M''')
+                        end
            in
-	       r := SOME X'; 
-	       X' 
+               r := SOME X'; 
+               X' 
            end
        end
    | PARmodexp modexp =>
@@ -2710,56 +2710,56 @@ and elabModExp expectation (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
          X
       end
   | RECmodexp ((loc,modid),inforef,
-	       sigexp as (locsigexp,_),
-	       modexp as (locmodexp,_)) =>
+               sigexp as (locsigexp,_),
+               modexp as (locmodexp,_)) =>
       let val LAMBDAsig (T,M) = elabSigExp ME FE GE UE VE TE sigexp
-	  val (ME',RS) = case M of 
-	      STRmod RS =>
+          val (ME',RS) = case M of 
+              STRmod RS =>
                   (let val normRS = normRecStr RS
-		   in
-		       inforef := SOME normRS;
-		       (bindInEnv ME modid {qualid=mkLocalName modid,
-					    info = normRS},
-			RS)
-		   end)
-	    | FUNmod F => 
-		  errorMsg locsigexp "Illegal recursive structure: \
-		   \the forward specification should specify \
-		   \a structure but actually specifies a functor"
-	  val _ = incrBindingLevel();
+                   in
+                       inforef := SOME normRS;
+                       (bindInEnv ME modid {qualid=mkLocalName modid,
+                                            info = normRS},
+                        RS)
+                   end)
+            | FUNmod F => 
+                  errorMsg locsigexp "Illegal recursive structure: \
+                   \the forward specification should specify \
+                   \a structure but actually specifies a functor"
+          val _ = incrBindingLevel();
           val _ = refreshTyNameSet PARAMETERts T;
-	  val EXISTSexmod(T',M') = elabModExp STRexpected ME' FE GE UE VE TE modexp
-	  val RS' = case M' of 
-	      STRmod RS' =>
+          val EXISTSexmod(T',M') = elabModExp STRexpected ME' FE GE UE VE TE modexp
+          val RS' = case M' of 
+              STRmod RS' =>
                   RS'
-	    | FUNmod F => 
-		  errorMsg locmodexp "Illegal recursive structure: \
-		                     \the body should be \
-				     \a structure but is actually a functor"
+            | FUNmod F => 
+                  errorMsg locmodexp "Illegal recursive structure: \
+                                     \the body should be \
+                                     \a structure but is actually a functor"
           val _ = refreshTyNameSet PARAMETERts T';
           val _ = matchMod (STRmod RS') (STRmod RS)
-		      handle MatchError matchReason => 
-			  (msgIBlock 0;
-			   errLocation loc;
-			   errPrompt "Illegal recursive structure: \
-			    \the body does not enrich the forward specification...";
-			   msgEOL();
-			   msgEBlock();
-			   errMatchReason "body" "forward specification" matchReason;
-			   raise Toplevel)
+                      handle MatchError matchReason => 
+                          (msgIBlock 0;
+                           errLocation loc;
+                           errPrompt "Illegal recursive structure: \
+                            \the body does not enrich the forward specification...";
+                           msgEOL();
+                           msgEBlock();
+                           errMatchReason "body" "forward specification" matchReason;
+                           raise Toplevel)
       in 
-	  decrBindingLevel();
-	  let val X' = EXISTSexmod(T@T',STRmod (normRecStr RS'))
-	  in
-	      r := SOME X';
-	      X'
-	  end
+          decrBindingLevel();
+          let val X' = EXISTSexmod(T@T',STRmod (normRecStr RS'))
+          in
+              r := SOME X';
+              X'
+          end
       end
 
 and elabValBind (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv)
  (TE : TyEnv)  (vbs : ValBind list) =
   let val _ = app (fn ValBind(r as ref p, e) => 
-                     r := resolvePatCon ME  VE p) 
+                     r := resolvePatCon ME  VE p)
                   vbs 
       val ps = map (fn ValBind(ref p,e) => p) vbs
       val es = map (fn ValBind(ref p,e) => e) vbs
@@ -2837,9 +2837,9 @@ and elabExDesc (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE
 and elabExDescList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv)
   (VE : VarEnv) (TE : TyEnv)  eds =
   closeEE (foldL_map (fn (locid, tau) => fn env =>
-		      bindOnceInEnv env locid tau
-		      	       "the same exception constructor is specified twice\ 
-				\ in an exception specification")
+                      bindOnceInEnv env locid tau
+                                     "the same exception constructor is specified twice\ 
+                                \ in an exception specification")
                      (elabExDesc ME FE GE UE VE TE ) NILenv eds)
 
 
@@ -2847,277 +2847,277 @@ and elabSigExp (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE:TyE
   (loc, sigexp) = 
   (case sigexp of
       SPECsigexp spec => 
-	  let val LAMBDA(T,S) = elabSpec ME FE GE UE VE TE  spec
+          let val LAMBDA(T,S) = elabSpec ME FE GE UE VE TE  spec
               val _ = checkNoRebindingsStr loc S
-     	                "the same identifier is specified twice in the body of this signature"
-	  in LAMBDAsig (T,STRmod (NONrec (removeGEofStr S)))
-	  end
+                             "the same identifier is specified twice in the body of this signature"
+          in LAMBDAsig (T,STRmod (NONrec (removeGEofStr S)))
+          end
    |  SIGIDsigexp (loc,sigid) => 
           let val {qualid,info = G} = findSigId GE loc sigid
           in copySig [] [] G
           end
    | FUNSIGsigexp (Generative standard,(loc,modid),sigexp,sigexp') =>
           let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE  sigexp
-	      val (ME',FE') = case M of 
-				    STRmod S =>
-					(bindInEnv ME modid {qualid=mkLocalName modid,
-							     info = normRecStr S},
-					 FE)
-				  | FUNmod F => 
-					(ME,
-					 bindInEnv FE modid {qualid=mkLocalName modid,
-							     info = F})
-	      val _ = incrBindingLevel();
-	      val _ = refreshTyNameSet PARAMETERts T;
-	      val LAMBDAsig(T',M') = elabSigExp ME' FE' GE UE VE TE sigexp'
-	  in
-	    (decrBindingLevel();
-	     LAMBDAsig([],FUNmod (T,M,(EXISTSexmod(T',M')))))
-	  end
+              val (ME',FE') = case M of 
+                                    STRmod S =>
+                                        (bindInEnv ME modid {qualid=mkLocalName modid,
+                                                             info = normRecStr S},
+                                         FE)
+                                  | FUNmod F => 
+                                        (ME,
+                                         bindInEnv FE modid {qualid=mkLocalName modid,
+                                                             info = F})
+              val _ = incrBindingLevel();
+              val _ = refreshTyNameSet PARAMETERts T;
+              val LAMBDAsig(T',M') = elabSigExp ME' FE' GE UE VE TE sigexp'
+          in
+            (decrBindingLevel();
+             LAMBDAsig([],FUNmod (T,M,(EXISTSexmod(T',M')))))
+          end
    | FUNSIGsigexp (Applicative,(loc,modid),sigexp,sigexp') =>
           let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE  sigexp
-	      val (ME',FE') = case M of 
-				    STRmod S =>
-					(bindInEnv ME modid {qualid=mkLocalName modid,
-							     info = normRecStr S},
-					 FE)
-				  | FUNmod F => 
-					(ME,
-					 bindInEnv FE modid {qualid=mkLocalName modid,
-							     info = F})
-	      val _ = incrBindingLevel();
-	      val _ = incrBindingLevel();
-	      val _ = refreshTyNameSet PARAMETERts T;
-	      val LAMBDAsig(T',M') = elabSigExp ME' FE' GE UE VE TE sigexp'
+              val (ME',FE') = case M of 
+                                    STRmod S =>
+                                        (bindInEnv ME modid {qualid=mkLocalName modid,
+                                                             info = normRecStr S},
+                                         FE)
+                                  | FUNmod F => 
+                                        (ME,
+                                         bindInEnv FE modid {qualid=mkLocalName modid,
+                                                             info = F})
+              val _ = incrBindingLevel();
+              val _ = incrBindingLevel();
+              val _ = refreshTyNameSet PARAMETERts T;
+              val LAMBDAsig(T',M') = elabSigExp ME' FE' GE UE VE TE sigexp'
               val _ = decrBindingLevel();
               val (T'',T'toT'') = parameteriseTyNameSet T' T
-	  in  decrBindingLevel();
-	      (LAMBDAsig(T'',FUNmod (T,M,(EXISTSexmod([],copyMod T'toT'' [] M')))))
-	  end
+          in  decrBindingLevel();
+              (LAMBDAsig(T'',FUNmod (T,M,(EXISTSexmod([],copyMod T'toT'' [] M')))))
+          end
    | WHEREsigexp (sigexp, tyvarseq, longtycon,ty) => (* cvr: TODO review *)
       (* Unlike SML, we reject where type constraints that construct inconsistent signatures 
          by equating a specified datatype with a non-equivalent type or datatype. 
-	 In SML, an inconsistent signature can never be implemented, but in Mosml it
+         In SML, an inconsistent signature can never be implemented, but in Mosml it
          can, by using a recursive structure, so we have to rule out inconsitent signatures from
-	 the start.
+         the start.
        *)
       (case (elabSigExp ME FE GE UE VE TE  sigexp) of
-	    (LAMBDAsig(_,FUNmod _)) =>
-		errorMsg loc "Illegal where constraint: the constrained signature specifies a functor but should specify a structure"
-	|   (LAMBDAsig(T,STRmod RS)) =>
-	      let val S = SofRecStr RS
-		  val _ = incrBindingLevel();
-		  val _ = refreshTyNameSet PARAMETERts T;
-		  val _ = checkDuplIds tyvarseq "Duplicate type parameter"
+            (LAMBDAsig(_,FUNmod _)) =>
+                errorMsg loc "Illegal where constraint: the constrained signature specifies a functor but should specify a structure"
+        |   (LAMBDAsig(T,STRmod RS)) =>
+              let val S = SofRecStr RS
+                  val _ = incrBindingLevel();
+                  val _ = refreshTyNameSet PARAMETERts T;
+                  val _ = checkDuplIds tyvarseq "Duplicate type parameter"
                   val pars = map (fn tyvar => hd(#id(#qualid tyvar))) tyvarseq
-		  val vs = map (fn tv => newExplicitTypeVar tv) pars
-		  val us = map TypeOfTypeVar vs
-		  val UE' = zip2 pars us
+                  val vs = map (fn tv => newExplicitTypeVar tv) pars
+                  val us = map TypeOfTypeVar vs
+                  val UE' = zip2 pars us
                   val {qualid = qualid,info={idLoc,...}} = longtycon
-		  val tycon = hd (#id qualid)
+                  val tycon = hd (#id qualid)
                   val tau = elabTy ME FE GE (UE' @ UE) VE TE ty
                   val infTyFun = TYPEtyfun(vs,tau)
-		  val infTyStr = (infTyFun,ConEnv [])
+                  val infTyStr = (infTyFun,ConEnv [])
                   val _ = decrBindingLevel();
                   val specTyStr = findLongTyConInStr S idLoc qualid
                   val specTyFun = normTyFun (#1 specTyStr)
                   val tn = (choose (equalsTyFunTyName specTyFun) T)
                            handle Subscript =>
-			    (msgIBlock 0;
-			     errLocation loc;
-			     errPrompt "Illegal where constraint: the type constructor "; printQualId qualid;msgEOL();
+                            (msgIBlock 0;
+                             errLocation loc;
+                             errPrompt "Illegal where constraint: the type constructor "; printQualId qualid;msgEOL();
                              errPrompt "refers to a transparent type specification";msgEOL();
                              errPrompt "but should refer to an opaque type or datatype specification";msgEOL();
-			     msgEBlock();
-			     raise Toplevel)
-		  exception IllFormed
-	      in  			
-		 setTnSort (#info tn) (VARIABLEts);
-		 ((realizeLongTyCon qualid infTyStr specTyStr)
-		  handle MatchError matchReason => 
-		      (msgIBlock 0;
-		       errLocation loc;
-		       errPrompt "Illegal where constraint: the type constructor "; printQualId qualid;msgEOL();
-		       errPrompt "cannot be constrained in this way because ...";msgEOL();
-		       msgEBlock();
-		       errMatchReason "constraint" "signature" matchReason;
-		       raise Toplevel));
-		 ((case !(#tnConEnv(!(#info(tn)))) of (* check well-formedness *)
-		       NONE => () (* nothing to check *)
-		     | SOME specConEnv => 
-			   (case normType tau of (* eta-equivalent to a type application? *)
-				CONt(ts,tyapp) => 
-				    let fun equal_args [] [] = ()
-					|   equal_args ((VARt w)::ts) (v::vs) = 
-					     if w = v 
-					     then equal_args ts vs
-					     else raise IllFormed
+                             msgEBlock();
+                             raise Toplevel)
+                  exception IllFormed
+              in  			
+                 setTnSort (#info tn) (VARIABLEts);
+                 ((realizeLongTyCon qualid infTyStr specTyStr)
+                  handle MatchError matchReason => 
+                      (msgIBlock 0;
+                       errLocation loc;
+                       errPrompt "Illegal where constraint: the type constructor "; printQualId qualid;msgEOL();
+                       errPrompt "cannot be constrained in this way because ...";msgEOL();
+                       msgEBlock();
+                       errMatchReason "constraint" "signature" matchReason;
+                       raise Toplevel));
+                 ((case !(#tnConEnv(!(#info(tn)))) of (* check well-formedness *)
+                       NONE => () (* nothing to check *)
+                     | SOME specConEnv => 
+                           (case normType tau of (* eta-equivalent to a type application? *)
+                                CONt(ts,tyapp) => 
+                                    let fun equal_args [] [] = ()
+                                        |   equal_args ((VARt w)::ts) (v::vs) = 
+                                             if w = v 
+                                             then equal_args ts vs
+                                             else raise IllFormed
                                         |   equal_args _ _ = raise IllFormed
-				    in
-					equal_args ts vs;
-					case conEnvOfTyApp tyapp of
-					    NONE => raise IllFormed
-					  | SOME infConEnv => (* equivalent conenvs ? *)
-					        let 
-   						    val infMod =
-							STRmod (NONrec (STRstr
-							  (NILenv,NILenv,NILenv,
-							   mk1Env tycon (infTyFun,infConEnv),
-							   (VEofCE infConEnv))))
-						    val specMod = copyMod [(tn,tyapp)] [] 
-							(STRmod (NONrec (STRstr 
- 							  (NILenv,NILenv,NILenv,
-							   mk1Env tycon (specTyFun,specConEnv),
-							   (VEofCE specConEnv)))))
-						in
-						   ((matchMod infMod specMod)
-						     handle MatchError matchReason => 
-							 (msgIBlock 0;
-							  errLocation loc;
-							  errPrompt "Illegal where constraint: the datatype constructor ";
-							   printQualId qualid;msgEOL();
-							  errPrompt "cannot be constrained in this way because ";msgEOL();
-							  errPrompt "the constraint's constructor environment \
- 							   \does not match the specification's constructor environment";msgEOL();
-							  msgEBlock();
-							  errMatchReason "constraint" "specification" matchReason;
-							  raise Toplevel);
-						     (matchMod specMod infMod)
-						     handle MatchError matchReason => 
-							 (msgIBlock 0;
-							  errLocation loc;
-							  errPrompt "Illegal where constraint: the datatype constructor ";
-							   printQualId qualid;msgEOL();
-							  errPrompt "cannot be constrained in this way because ";msgEOL();
-							  errPrompt "the specification's constructor environment \
- 							   \does not match the constraint's constructor environment";msgEOL();
-							  msgEBlock();
-							  errMatchReason "specification" "constraint" matchReason;
-							  raise Toplevel))
-						end
-				    end					
-			      | _ => raise IllFormed))
-		  handle IllFormed =>
-		      (msgIBlock 0;
-		       errLocation loc;
-		       errPrompt "Illegal where constraint: the type constructor ";printQualId qualid;msgEOL();
-		       errPrompt "is specified as a datatype"; msgEOL();
-		       errPrompt "but its constraint is not a datatype";msgEOL();
-		       msgEBlock();
-		       raise Toplevel));
-		 LAMBDAsig(remove tn T,STRmod RS) 
-	      end)
+                                    in
+                                        equal_args ts vs;
+                                        case conEnvOfTyApp tyapp of
+                                            NONE => raise IllFormed
+                                          | SOME infConEnv => (* equivalent conenvs ? *)
+                                                let 
+                                                       val infMod =
+                                                        STRmod (NONrec (STRstr
+                                                          (NILenv,NILenv,NILenv,
+                                                           mk1Env tycon (infTyFun,infConEnv),
+                                                           (VEofCE infConEnv))))
+                                                    val specMod = copyMod [(tn,tyapp)] [] 
+                                                        (STRmod (NONrec (STRstr 
+                                                           (NILenv,NILenv,NILenv,
+                                                           mk1Env tycon (specTyFun,specConEnv),
+                                                           (VEofCE specConEnv)))))
+                                                in
+                                                   ((matchMod infMod specMod)
+                                                     handle MatchError matchReason => 
+                                                         (msgIBlock 0;
+                                                          errLocation loc;
+                                                          errPrompt "Illegal where constraint: the datatype constructor ";
+                                                           printQualId qualid;msgEOL();
+                                                          errPrompt "cannot be constrained in this way because ";msgEOL();
+                                                          errPrompt "the constraint's constructor environment \
+                                                            \does not match the specification's constructor environment";msgEOL();
+                                                          msgEBlock();
+                                                          errMatchReason "constraint" "specification" matchReason;
+                                                          raise Toplevel);
+                                                     (matchMod specMod infMod)
+                                                     handle MatchError matchReason => 
+                                                         (msgIBlock 0;
+                                                          errLocation loc;
+                                                          errPrompt "Illegal where constraint: the datatype constructor ";
+                                                           printQualId qualid;msgEOL();
+                                                          errPrompt "cannot be constrained in this way because ";msgEOL();
+                                                          errPrompt "the specification's constructor environment \
+                                                            \does not match the constraint's constructor environment";msgEOL();
+                                                          msgEBlock();
+                                                          errMatchReason "specification" "constraint" matchReason;
+                                                          raise Toplevel))
+                                                end
+                                    end					
+                              | _ => raise IllFormed))
+                  handle IllFormed =>
+                      (msgIBlock 0;
+                       errLocation loc;
+                       errPrompt "Illegal where constraint: the type constructor ";printQualId qualid;msgEOL();
+                       errPrompt "is specified as a datatype"; msgEOL();
+                       errPrompt "but its constraint is not a datatype";msgEOL();
+                       msgEBlock();
+                       raise Toplevel));
+                 LAMBDAsig(remove tn T,STRmod RS) 
+              end)
    | RECsigexp ((_,modid),sigexp as (locforward,_),sigexp' as (locbody,_)) =>
           let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE  sigexp
-	      val (ME',RS) = 
-		  case M of STRmod RS =>
-		      (bindInEnv ME modid {qualid=mkLocalName modid,
-					   info = normRecStr RS},
-		       RS)
-		  | FUNmod F => 
-		      errorMsg locforward 
-		               "Illegal recursive signature: \
-				\the forward specification should specify \
-				\a structure but actually specifies a functor"
-	      val _ = incrBindingLevel();
-	      val _ = refreshTyNameSet PARAMETERts T;
-	      val LAMBDAsig(T',M') = elabSigExp ME' FE GE UE VE TE sigexp'
-	      val RS' = 
-		  case M' of 
-		      STRmod RS' => RS'
-		    | FUNmod F => 
-			  errorMsg locbody 
-			           "Illegal recursive signature: \
-				    \the body should specify a structure \
-				    \but actually specifies a functor"
-	      val _ = refreshTyNameSet VARIABLEts T;
-	      val _ = refreshTyNameSet PARAMETERts T';
-	      val _ = matchMod (STRmod RS') (STRmod RS)
-		      handle MatchError matchReason => 
-			  (msgIBlock 0;
-			   errLocation loc;
-			   errPrompt "Illegal recursive signature: \
-			              \the body does not match the \
-				      \forward specification...";
-			   msgEOL();
-			   msgEBlock();
-			   errMatchReason "body" "forward specification" matchReason;
-			   raise Toplevel)
-	  in
+              val (ME',RS) = 
+                  case M of STRmod RS =>
+                      (bindInEnv ME modid {qualid=mkLocalName modid,
+                                           info = normRecStr RS},
+                       RS)
+                  | FUNmod F => 
+                      errorMsg locforward 
+                               "Illegal recursive signature: \
+                                \the forward specification should specify \
+                                \a structure but actually specifies a functor"
+              val _ = incrBindingLevel();
+              val _ = refreshTyNameSet PARAMETERts T;
+              val LAMBDAsig(T',M') = elabSigExp ME' FE GE UE VE TE sigexp'
+              val RS' = 
+                  case M' of 
+                      STRmod RS' => RS'
+                    | FUNmod F => 
+                          errorMsg locbody 
+                                   "Illegal recursive signature: \
+                                    \the body should specify a structure \
+                                    \but actually specifies a functor"
+              val _ = refreshTyNameSet VARIABLEts T;
+              val _ = refreshTyNameSet PARAMETERts T';
+              val _ = matchMod (STRmod RS') (STRmod RS)
+                      handle MatchError matchReason => 
+                          (msgIBlock 0;
+                           errLocation loc;
+                           errPrompt "Illegal recursive signature: \
+                                      \the body does not match the \
+                                      \forward specification...";
+                           msgEOL();
+                           msgEBlock();
+                           errMatchReason "body" "forward specification" matchReason;
+                           raise Toplevel)
+          in
             (decrBindingLevel();
-	     LAMBDAsig(T',STRmod (RECrec(RS,RS'))))
-	  end)
+             LAMBDAsig(T',STRmod (RECrec(RS,RS'))))
+          end)
 
 and elabModDesc (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE : TyEnv) (MODDESCmoddesc (locmodid as (loc,modid), sigexp as (loc',_)) : ModDesc)=
   let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE sigexp
       val S = case M of 
-	           STRmod S => S
-		 | FUNmod _ => 
-		       errorMsg loc' 
-		       "This signature actually specifies a functor \
-			\but should specify a structure"
+                   STRmod S => S
+                 | FUNmod _ => 
+                       errorMsg loc' 
+                       "This signature actually specifies a functor \
+                        \but should specify a structure"
   in LAMBDA(T,(locmodid,{qualid = mkLocalName modid, info = S})) end
 
 and elabModDescList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE : TyEnv) mds =
   foldL_map 
       (fn (LAMBDA(T',(locmodid,M))) => fn LAMBDA(T,ME) => 
        LAMBDA(T@T', bindOnceInEnv ME locmodid M
-	             "the same structure identifier is specified twice\ 
-		      \ in a structure specification"))
+                     "the same structure identifier is specified twice\ 
+                      \ in a structure specification"))
      (elabModDesc ME FE GE UE VE TE ) (LAMBDA([],NILenv)) mds
 and elabFunDesc (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE : TyEnv) 
-	      (FUNDESCfundesc (locmodid as (loc,modid), sigexp as (loc',_)) : FunDesc)=
+              (FUNDESCfundesc (locmodid as (loc,modid), sigexp as (loc',_)) : FunDesc)=
   let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE sigexp
       val F = case M of 
-	            FUNmod F => F
+                    FUNmod F => F
                  |  STRmod _ => 
-		       errorMsg loc' 
-		       "This signature actually specifies a structure \
-			\but should specify a functor"
+                       errorMsg loc' 
+                       "This signature actually specifies a structure \
+                        \but should specify a functor"
   in LAMBDA(T,(locmodid,{qualid = mkLocalName modid, info = F})) end
 
 and elabFunDescList (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE:UEnv) (VE:VarEnv) (TE : TyEnv) mds =
   foldL_map 
       (fn (LAMBDA(T',(locfunid,F))) => fn LAMBDA(T,FE) => 
        LAMBDA(T@T', bindOnceInEnv FE locfunid F
-	             "the same functor identifier is specified twice\ 
-		      \ in a functor specification"))
+                     "the same functor identifier is specified twice\ 
+                      \ in a functor specification"))
      (elabFunDesc ME FE GE UE VE TE ) (LAMBDA([],NILenv)) mds
 and elabSpec  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE : TyEnv)  (loc, spec') =
   case spec' of
     VALspec (tyvarseq,vds) => 
        let val _ = checkDuplIds tyvarseq "Duplicate explicit type variable"
-	   val pars = map (fn ii => hd(#id(#qualid ii))) tyvarseq
-	   val tyvars = scopedTyVars loc UE pars (unguardedValDescList vds)
-	   val ()   = incrBindingLevel()
+           val pars = map (fn ii => hd(#id(#qualid ii))) tyvarseq
+           val tyvars = scopedTyVars loc UE pars (unguardedValDescList vds)
+           val ()   = incrBindingLevel()
            val tvs = map (fn tv => newExplicitTypeVar tv) tyvars
-	   val UE'  = (zip2 tyvars (map TypeOfTypeVar tvs)) @ UE
-	   val VE' = 
-	      foldL_map (fn(locid, info) => fn acc => 
-  		           bindOnceInEnv acc locid info
-			     "the same value identifier is specified twice\ 
-			      \ in a value specification")
-			 (elabValDesc ME FE GE UE' VE TE tvs)
+           val UE'  = (zip2 tyvars (map TypeOfTypeVar tvs)) @ UE
+           val VE' = 
+              foldL_map (fn(locid, info) => fn acc => 
+                             bindOnceInEnv acc locid info
+                             "the same value identifier is specified twice\ 
+                              \ in a value specification")
+                         (elabValDesc ME FE GE UE' VE TE tvs)
                          NILenv vds
        in decrBindingLevel();
- 	  LAMBDA([],STRstr (NILenv, NILenv,NILenv, NILenv, VE'))
+           LAMBDA([],STRstr (NILenv, NILenv,NILenv, NILenv, VE'))
        end
  | PRIM_VALspec (tyvarseq,pbs) => 
        let val _ = checkDuplIds tyvarseq "Duplicate explicit type variable"
-	   val pars = map (fn ii => hd(#id(#qualid ii))) tyvarseq
-	   val tyvars = scopedTyVars loc UE pars (unguardedPrimValBindList pbs)
-	   val () = incrBindingLevel()
+           val pars = map (fn ii => hd(#id(#qualid ii))) tyvarseq
+           val tyvars = scopedTyVars loc UE pars (unguardedPrimValBindList pbs)
+           val () = incrBindingLevel()
            val tvs = map (fn tv => newExplicitTypeVar tv) tyvars
-	   val UE' = (zip2 tyvars (map TypeOfTypeVar tvs)) @ UE
-	   val VE' = 
-	      foldL_map (fn(locid, info) => fn acc => 
-  		           bindOnceInEnv acc locid info
-			     "the same value identifier is specified twice\ 
-			      \ in a value specification")
-			 (elabPrimValBind ME FE GE UE' VE TE tvs)
+           val UE' = (zip2 tyvars (map TypeOfTypeVar tvs)) @ UE
+           val VE' = 
+              foldL_map (fn(locid, info) => fn acc => 
+                             bindOnceInEnv acc locid info
+                             "the same value identifier is specified twice\ 
+                              \ in a value specification")
+                         (elabPrimValBind ME FE GE UE' VE TE tvs)
                          NILenv pbs
        in decrBindingLevel();
- 	  LAMBDA([],STRstr (NILenv, NILenv,NILenv, NILenv, VE'))
+           LAMBDA([],STRstr (NILenv, NILenv,NILenv, NILenv, VE'))
        end
   | TYPEDESCspec(equ, tds) =>
       let val LAMBDA(T',TE') = elabPrimTypBindList equ tds
@@ -3137,10 +3137,10 @@ and elabSpec  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE 
           val tbsTE = elabTypBindList_opt ME FE GE UE VE (plusEnv TE dbsTE) tbs_opt
           (* Here dbsTE will get destructively updated too. *)
           val _ = checkNoRebindingsTyEnv loc (plusEnv dbsTE tbsTE)
-	             "the same type constructur is specified twice in this datatype specification"
+                     "the same type constructur is specified twice in this datatype specification"
           val (VE',dbsTE') = elabDatBindList ME FE GE UE VE (plusEnv (plusEnv TE dbsTE) tbsTE) dbs
           val _ = checkNoRebindingsVarEnv loc VE'
-	             "the same constructor is specified twice in this datatype declaration"
+                     "the same constructor is specified twice in this datatype declaration"
       in
         maximizeEquality dbsTE';
         setEquality tbsTE;
@@ -3172,11 +3172,11 @@ and elabSpec  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE 
   | INCLUDEspec sigexp =>
       let val LAMBDAsig(T,M) = elabSigExp ME FE GE UE VE TE sigexp
       in  case M of 
-	  FUNmod _ => 
-	      errorMsg loc "Illegal include: the included \
+          FUNmod _ => 
+              errorMsg loc "Illegal include: the included \
                             \signature must specify a structure, not a functor"
         | STRmod (NONrec S) => LAMBDA(T,S)
-	| _ => errorMsg loc "Illegal include: the included \
+        | _ => errorMsg loc "Illegal include: the included \
                              \signature may not be recursive"
       end
   | SHARINGTYPEspec (spec,longtyconlist) => 
@@ -3184,51 +3184,51 @@ and elabSpec  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE 
           val _ = incrBindingLevel();
           val _ = refreshTyNameSet PARAMETERts T;
           val LocTyFunOfLongTyCon = 
-	      let val S' = STRstr(MEofStr S,FEofStr S,GEofStr S,TEofStr S,VEofStr S) 
-		  (* this step flattens S' once, instead of once for each find *)
-	      in
-	          fn longtycon as {qualid,info = {idLoc,...},...} =>
-		     (idLoc,#1 (findLongTyConInStr S' idLoc qualid))
-	      end
+              let val S' = STRstr(MEofStr S,FEofStr S,GEofStr S,TEofStr S,VEofStr S) 
+                  (* this step flattens S' once, instead of once for each find *)
+              in
+                  fn longtycon as {qualid,info = {idLoc,...},...} =>
+                     (idLoc,#1 (findLongTyConInStr S' idLoc qualid))
+              end
           val LocTyFuns = map LocTyFunOfLongTyCon longtyconlist
           fun orderAsT LocT = foldR (fn tn => fn acc =>
-				      ((choose (fn (loc,tn') => isEqTN tn tn') LocT)::acc)
-				       handle Subscript => acc)
-	                       [] T
-	  val LocT' (* as ((loc,tn)::LocT'') *) =
-	      orderAsT 
+                                      ((choose (fn (loc,tn') => isEqTN tn tn') LocT)::acc)
+                                       handle Subscript => acc)
+                               [] T
+          val LocT' (* as ((loc,tn)::LocT'') *) =
+              orderAsT 
                  (map (fn (loc,tyfun) =>
-			   ((loc,choose (equalsTyFunTyName tyfun) T)
-			     handle Subscript => 
-			       errorMsg loc "Illegal sharing spec: \
-				\this type constructor does not denote \
+                           ((loc,choose (equalsTyFunTyName tyfun) T)
+                             handle Subscript => 
+                               errorMsg loc "Illegal sharing spec: \
+                                \this type constructor does not denote \
                                 \an opaque type of the specification"))
-			 LocTyFuns)
+                         LocTyFuns)
           val ((loc,tn),LocT'') = case LocT' of 
-		                     (loctn::LocT'') => (loctn,LocT'')
-				  | _ => fatalError "elabSpec"
+                                     (loctn::LocT'') => (loctn,LocT'')
+                                  | _ => fatalError "elabSpec"
           val kind = kindTyName tn
           val _ = app (fn (loc,tn'') =>
-		       if kindTyName tn'' = kind
-			   then ()
-		       else errorMsg loc "Illegal sharing spec: \
-		            \the arity of this type constructor differs from the preceding ones")
-		       (LocT'')
-	  val TminusT'' = foldR (fn (loc,tn) => fn TminusT'' =>
- 		                  remove tn TminusT'')
-		                 T LocT''
+                       if kindTyName tn'' = kind
+                           then ()
+                       else errorMsg loc "Illegal sharing spec: \
+                            \the arity of this type constructor differs from the preceding ones")
+                       (LocT'')
+          val TminusT'' = foldR (fn (loc,tn) => fn TminusT'' =>
+                                   remove tn TminusT'')
+                                 T LocT''
           val equ = foldR (fn (_,tn) => fn equ => 
-		       if (#tnEqu (!(#info tn))) <> FALSEequ 
-			   then TRUEequ                  (* cvr: TODO should we worry about REFequ? *)
-		       else equ)
-		       FALSEequ LocT'
+                       if (#tnEqu (!(#info tn))) <> FALSEequ 
+                           then TRUEequ                  (* cvr: TODO should we worry about REFequ? *)
+                       else equ)
+                       FALSEequ LocT'
           val _ = setTnEqu (#info tn) equ
           val _ = app (fn (_,tn'') => setTnSort (#info tn'') 
-		        (REAts (APPtyfun(NAMEtyapp tn))))
-		      LocT''
+                        (REAts (APPtyfun(NAMEtyapp tn))))
+                      LocT''
       in
           decrBindingLevel();
-	  LAMBDA(TminusT'', S)
+          LAMBDA(TminusT'', S)
       end
   | SEQspec (spec1, spec2) =>
       let val LAMBDA(T',S)  = elabSpec ME FE GE UE VE TE  spec1
@@ -3236,37 +3236,37 @@ and elabSpec  (ME:ModEnv) (FE:FunEnv) (GE:SigEnv) (UE : UEnv) (VE : VarEnv) (TE 
           val _ = refreshTyNameSet PARAMETERts T';
           val LAMBDA(T'',S') =
             elabSpec (plusEnv ME (MEofStr S)) 
-	             (plusEnv FE (FEofStr S)) 
-		     (plusEnv GE (GEofStr S)) 
-		     UE 
-		     (plusEnv VE (VEofStr S)) 
-		     (plusEnv TE (TEofStr S)) 
-		      
-		     spec2
+                     (plusEnv FE (FEofStr S)) 
+                     (plusEnv GE (GEofStr S)) 
+                     UE 
+                     (plusEnv VE (VEofStr S)) 
+                     (plusEnv TE (TEofStr S)) 
+                      
+                     spec2
       in  decrBindingLevel();
-	  LAMBDA(T'@T'',SEQstr(S,S')) 
+          LAMBDA(T'@T'',SEQstr(S,S')) 
       end
   | SHARINGspec (spec1, (loc',longmodids)) =>
-	  let val LAMBDA(T, S) = elabSpec ME FE GE UE VE TE  spec1
-	      val _ = incrBindingLevel();
-	      val _ = refreshTyNameSet PARAMETERts T;
-	      val Ss =
-		     foldR
-		     (fn longmodid as {qualid,info={idLoc,...}} =>
-		      (fn Ss =>
-		       let val (_,{info = S_i,qualid}) = findLongModIdInStr S idLoc qualid  
-		       in
-			   S_i::Ss
-		       end))
-		        [] longmodids
-	  in let val T' = share (loc',T,Ss)
-	     in
-		 decrBindingLevel();
-		 LAMBDA(T', S)
-	     end
+          let val LAMBDA(T, S) = elabSpec ME FE GE UE VE TE  spec1
+              val _ = incrBindingLevel();
+              val _ = refreshTyNameSet PARAMETERts T;
+              val Ss =
+                     foldR
+                     (fn longmodid as {qualid,info={idLoc,...}} =>
+                      (fn Ss =>
+                       let val (_,{info = S_i,qualid}) = findLongModIdInStr S idLoc qualid  
+                       in
+                           S_i::Ss
+                       end))
+                        [] longmodids
+          in let val T' = share (loc',T,Ss)
+             in
+                 decrBindingLevel();
+                 LAMBDA(T', S)
+             end
           end
   | FIXITYspec _ => 
-	  LAMBDA([],STRstr (NILenv,NILenv,NILenv,NILenv, NILenv))
+          LAMBDA([],STRstr (NILenv,NILenv,NILenv,NILenv, NILenv))
   | SIGNATUREspec sigbinds => 
       let val GE' = elabSigBindList ME FE GE UE VE TE  sigbinds
       in    LAMBDA([],STRstr(NILenv,NILenv,GE',NILenv, NILenv))
@@ -3278,7 +3278,7 @@ and elabLocalSpec ME FE GE UE VE TE (loc,spec) =
     EMPTYspec => (NILenv,NILenv,NILenv,NILenv, NILenv)
   | SEQspec (spec1, spec2) =>
       let val (ME',FE',GE',VE',TE') =
-	        elabLocalSpec ME FE GE UE VE TE spec1
+                elabLocalSpec ME FE GE UE VE TE spec1
           val (ME'',FE'',GE'',VE'',TE'') =
                 elabLocalSpec (plusEnv ME ME') (plusEnv FE FE') 
                               (plusEnv GE GE') UE 
@@ -3286,24 +3286,24 @@ and elabLocalSpec ME FE GE UE VE TE (loc,spec) =
       in (plusEnv ME' ME'', plusEnv FE' FE'', plusEnv GE' GE'',
           plusEnv VE' VE'', plusEnv TE' TE'') end
   | OPENspec longmodidinfos => 
-	  foldL (fn (longmodid,envoptref) => fn (ME',FE',GE',VE',TE') =>
-		 let val {qualid,info} = longmodid
-		     val {idKind, idFields,... } = info
-		     val (fields,{qualid = csqualid, 
-				  info = Env as (ME'',FE'',GE'',VE'',TE'')}) = 
-  			 findLongModIdForOpen ME loc qualid
-		 in  
-		     idKind := { qualid=csqualid, info=VARik };
-		     idFields := fields;
+          foldL (fn (longmodid,envoptref) => fn (ME',FE',GE',VE',TE') =>
+                 let val {qualid,info} = longmodid
+                     val {idKind, idFields,... } = info
+                     val (fields,{qualid = csqualid, 
+                                  info = Env as (ME'',FE'',GE'',VE'',TE'')}) = 
+                           findLongModIdForOpen ME loc qualid
+                 in  
+                     idKind := { qualid=csqualid, info=VARik };
+                     idFields := fields;
                      (* this should be unnecessary 
-		         envoptref := SOME Env; *) 
-		     (plusEnv ME' ME'',
-		      plusEnv FE' FE'',
-		      plusEnv GE' GE'',
-		      plusEnv VE' VE'',
-		      plusEnv TE' TE'')
-		 end)
-	  (NILenv,NILenv,NILenv,NILenv,NILenv)
+                         envoptref := SOME Env; *) 
+                     (plusEnv ME' ME'',
+                      plusEnv FE' FE'',
+                      plusEnv GE' GE'',
+                      plusEnv VE' VE'',
+                      plusEnv TE' TE'')
+                 end)
+          (NILenv,NILenv,NILenv,NILenv,NILenv)
           longmodidinfos
   | TYPEspec tbs =>
       let val tbsTE = elabTypBindList ME FE GE UE VE TE tbs in
@@ -3328,13 +3328,13 @@ fun elabToplevelDec (dec : Dec) =
       elabDec (mkGlobalME()) (mkGlobalFE()) (mkGlobalGE()) [] 
               (mkGlobalVE()) (mkGlobalTE())   dec  
       val _ = if (!currentCompliance) <> Liberal 
-		   then Synchk.compliantTopDec dec 
-	      else ()
+                   then Synchk.compliantTopDec dec 
+              else ()
   in EXISTS(T',(cleanEnv ME', 
-		 cleanEnv FE', 
-		 cleanEnv GE', 
-		 cleanEnv VE', 
-		 cleanEnv TE'))
+                 cleanEnv FE', 
+                 cleanEnv GE', 
+                 cleanEnv VE', 
+                 cleanEnv TE'))
   end);
 
 fun elabStrDec (dec : Dec) =
@@ -3345,60 +3345,60 @@ fun elabStrDec (dec : Dec) =
      elabDec (mkGlobalME()) (mkGlobalFE()) (mkGlobalGE()) [] 
              (mkGlobalVE()) (mkGlobalTE())   dec  
       val _ = if (!currentCompliance) <> Liberal 
-		   then Synchk.compliantStrDec dec 
-	      else ()
+                   then Synchk.compliantStrDec dec 
+              else ()
   in 
       EXISTS(T',(cleanEnv ME', 
-		 cleanEnv FE', 
-		 cleanEnv GE', 
-		 cleanEnv VE', 
-		 cleanEnv TE'))
+                 cleanEnv FE', 
+                 cleanEnv GE', 
+                 cleanEnv VE', 
+                 cleanEnv TE'))
   end)
 
 fun elabToplevelSigExp (sigexp as (loc,_) : SigExp) =
     let val LAMBDAsig(T,M) = 
-	 elabSigExp (mkGlobalME()) 
-	            (mkGlobalFE()) 
-		    (mkGlobalGE()) 
-		    [] 
-		    (mkGlobalVE()) 
-		    (mkGlobalTE()) 
-		    sigexp
+         elabSigExp (mkGlobalME()) 
+                    (mkGlobalFE()) 
+                    (mkGlobalGE()) 
+                    [] 
+                    (mkGlobalVE()) 
+                    (mkGlobalTE()) 
+                    sigexp
     in  case M of  
-	  FUNmod _ => 
-	      errorMsg loc "Illegal unit signature: the signature \
+          FUNmod _ => 
+              errorMsg loc "Illegal unit signature: the signature \
                             \must specify a structure, not a functor"
         | STRmod RS => 
               (if (!currentCompliance) <> Liberal 
-		   then Synchk.compliantSigExp sigexp 
-	           else (); 
-	       LAMBDA(T,RS))
+                   then Synchk.compliantSigExp sigexp 
+                   else (); 
+               LAMBDA(T,RS))
     end
 
 fun elabToplevelSpec (spec : Spec) =
     let val StrSig = 
-	 elabSpec (mkGlobalME()) (mkGlobalFE()) 
-	          (mkGlobalGE()) [] 
-		  (mkGlobalVE()) (mkGlobalTE()) 
+         elabSpec (mkGlobalME()) (mkGlobalFE()) 
+                  (mkGlobalGE()) [] 
+                  (mkGlobalVE()) (mkGlobalTE()) 
                   spec
     in  
-	(*  we could, but don't, check compliance since toplevel-mode .sig files don't need to be ported 
-	  if (!currentCompliance) <> Liberal 
-	       then Synchk.compliantTopSpec spec
-	 else (); *) 
-	 StrSig
+        (*  we could, but don't, check compliance since toplevel-mode .sig files don't need to be ported 
+          if (!currentCompliance) <> Liberal 
+               then Synchk.compliantTopSpec spec
+         else (); *) 
+         StrSig
     end
 
 fun elabSigSpec (spec : Spec) =
     let val StrSig = 
-	 elabSpec (mkGlobalME()) (mkGlobalFE()) 
-	          (mkGlobalGE()) [] 
-		  (mkGlobalVE()) (mkGlobalTE()) 
+         elabSpec (mkGlobalME()) (mkGlobalFE()) 
+                  (mkGlobalGE()) [] 
+                  (mkGlobalVE()) (mkGlobalTE()) 
                   spec
     in  
-	if (!currentCompliance) <> Liberal 
-	    then Synchk.compliantSpec spec
-	else ();
+        if (!currentCompliance) <> Liberal 
+            then Synchk.compliantSpec spec
+        else ();
         StrSig
     end
 
@@ -3410,11 +3410,4 @@ fun elabSigSpec (spec : Spec) =
 
 val () = elabSigExpRef := elabSigExp;
 val () = elabModExpRef := elabModExp;
-
-
-
-
-
-
-
 

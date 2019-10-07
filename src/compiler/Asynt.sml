@@ -49,11 +49,11 @@ datatype TyConPath' =
    
 and Ty' =
     TYVARty of TyVar
-  | RECty of Ty Row
-  | CONty of Ty list * TyConPath
-  | FNty of Ty * Ty
+  | RECty of Ty Row (* record *)
+  | CONty of Ty list * TyConPath  (* ('a, 'b) t *)
+  | FNty of Ty * Ty (* function, 'a -> 'b *)
   | PACKty of SigExp 
-  | PARty of Ty
+  | PARty of Ty     (* "(" ty ")" *)
 
 
 and InfixPat =
@@ -74,7 +74,7 @@ and Pat' =
   | INFIXpat of InfixPat ref
   | PARpat of Pat
   | TYPEDpat of Pat * Ty
-  | LAYEREDpat of Pat * Pat
+  | LAYEREDpat of Pat * Pat (* pat_1 as pat_2 *)
 
 and RecPat =
     RECrp of Pat Row * RowType option
@@ -92,7 +92,7 @@ and Exp' =
   | RECexp of RecExp ref
   | VECexp of Exp list
   | LETexp of Dec * Exp
-  | PARexp of Exp
+  | PARexp of Exp (* LPAREN exp RPAREN, or "(" exp ")" *)
   | APPexp of Exp * Exp
   | INFIXexp of InfixExp ref
   | TYPEDexp of Exp * Ty
@@ -114,11 +114,11 @@ and RecExp =
 and MRule = MRule of (Pat list ref) * Exp
 
 and FunDec = 
-    UNRESfundec of TyVarSeq *  (FValBind list)
-  | RESfundec of Dec
+    UNRESfundec of TyVarSeq *  (FValBind list)  (* After parsing, there is only UNRESfundec *)
+  | RESfundec of Dec  (* After resolve(in Infixres.sml), UNREsfundec become RESfundec *)
                
 and Dec' =
-    VALdec of TyVarSeq * (ValBind list * ValBind list)
+    VALdec of TyVarSeq * (ValBind list * ValBind list)  (* #1 Valbind list is nonrec decl list, #2 is rec decl list *)
   | PRIM_VALdec of TyVarSeq * (PrimValBind list)
   | FUNdec of FunDec ref
   | TYPEdec of TypBind list
@@ -232,30 +232,3 @@ and DatBind = TyVarSeq * TyCon * ConBind list
 
 
 end;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
