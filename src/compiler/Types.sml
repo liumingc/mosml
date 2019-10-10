@@ -1,5 +1,5 @@
-open Misc List Fnlib Mixture 
-     Config 
+open Misc List Fnlib Mixture
+     Config
      Const Smlprim Globals Location Units;
 
 (* cvr: operations on semantic structures *)
@@ -7,7 +7,7 @@ open Misc List Fnlib Mixture
 fun SofRecStr RS =
     case RS of
       RECrec(RS,RS') => SofRecStr RS'
-    | NONrec S => S   
+    | NONrec S => S
 ;
 
 fun MEofStr (STRstr (ME,_,_,_,_)) = ME
@@ -26,13 +26,13 @@ fun VEofStr (STRstr (_,_,_,_,VE)) = VE
   | VEofStr (SEQstr (Str1,Str2)) = plusEnv (VEofStr Str1) (VEofStr Str2)
 
 fun removeGEofStr S =
-    case S of 
+    case S of
 	STRstr (ME,FE,NILenv,TE,VE) => S (* share if possible *)
       | STRstr (ME,FE,GE,TE,VE) => STRstr (ME,FE,NILenv,TE,VE)
       | SEQstr (S1,S2) => SEQstr (removeGEofStr S1,removeGEofStr S2) (* cvr: TODO improve sharing? *)
 ;
 
-fun removeGEofRecStr RS = 
+fun removeGEofRecStr RS =
     case RS of
        RECrec(_,_) => RS
     |  NONrec S => NONrec (removeGEofStr S)
@@ -41,10 +41,10 @@ fun removeGEofRecStr RS =
 fun VEofCE (ConEnv CE : ConEnv) =
     foldL (fn cs => fn env =>
            let val {qualid, info} = cs
-           in bindInEnv env (hd(#id qualid)) 
-                   {qualid = qualid, 
+           in bindInEnv env (hd(#id qualid))
+                   {qualid = qualid,
                     info = (#conType (!info),CONname info)} end)
-           NILenv 
+           NILenv
 	   CE
   | VEofCE _ = fatalError "VEofCE"
 ;
@@ -52,23 +52,23 @@ fun VEofCE (ConEnv CE : ConEnv) =
 
 (* cvr: paths locate errors that occur during signature matching *)
 datatype path = NILpath
-              | IDpath of string 
+              | IDpath of string
               | DOTpath of path * string
-              | DOMpath of path 
-              | RNGpath of path 
-              | UNITpath 
+              | DOMpath of path
+              | RNGpath of path
+              | UNITpath
 ;
 
-datatype ScopeViolation = 
+datatype ScopeViolation =
     TYNAMEsv of TyName
   | TYPEVARsv of TypeVar;
 (* unification *)
-datatype reason = 
+datatype reason =
     UnifyCircular | UnifyEquality | UnifyExplicit
   | UnifyTup | UnifyRec of Lab | UnifyOther
   | UnifyMod of matchReason option * matchReason option
   | UnifyScope of TypeVar * ScopeViolation
-and matchReason = 
+and matchReason =
     MissingValue of path * string * VarInfo
 |   MissingStructure of path * string * ModInfo
 |   MissingFunctor of path * string * FunInfo
@@ -100,54 +100,54 @@ local
  (* fun mktyname qual name info =
     {qualid={qual=qual, id=[name]}, info=ref info}  :  TyName;  *)
   fun mktyname qual name info =
-    {qualid={qual="General", id=[name]}, info=ref info}  :  TyName; 
+    {qualid={qual="General", id=[name]}, info=ref info}  :  TyName;
   fun mkSML name info =
     mktyname "General" name info;
-  val mkSMLStamp = 
+  val mkSMLStamp =
       let val next_stamp = ref 0
       in fn () => (incr (next_stamp);
 		   ("General",!next_stamp))
       end
 in
 (* Some predefined type names *)
-val tyname_unit = mkSML "unit"      
+val tyname_unit = mkSML "unit"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_bool = mkSML "bool"      
+and tyname_bool = mkSML "bool"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_char = mktyname "Char" "char" 
+and tyname_char = mktyname "Char" "char"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_exn = mkSML "exn" 
+and tyname_exn = mkSML "exn"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=FALSEequ, tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
 and tyname_frag = mkSML "frag"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 1, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_int = mktyname "Int" "int" 
+and tyname_int = mktyname "Int" "int"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_list = mkSML "list"  
+and tyname_list = mkSML "list"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 1, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
 and tyname_option = mkSML "option"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 1, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
 and tyname_order = mkSML "order"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_ppstream = mkSML "ppstream"  
+and tyname_ppstream = mkSML "ppstream"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=FALSEequ, tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_real = mktyname "Real" "real" 
+and tyname_real = mktyname "Real" "real"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
 and tyname_ref = mkSML "ref"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 1, tnEqu=REFequ,   tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_string = mktyname "String" "string" 
+and tyname_string = mktyname "String" "string"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
 (* cvr: REVISE hardwiring Substring.substring and the other type names seems
    a horrible hack - can't
    we simplify this? *)
-and tyname_substring = mktyname "Substring" "substring" 
+and tyname_substring = mktyname "Substring" "substring"
     {tnStamp=("Substring",1),  tnKind=ARITYkind 0, tnEqu=FALSEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_syserror = mktyname "OS" "syserror" 
+and tyname_syserror = mktyname "OS" "syserror"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=FALSEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_vector = mkSML "vector" 
+and tyname_vector = mkSML "vector"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 1, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_word = mktyname "Word" "word" 
+and tyname_word = mktyname "Word" "word"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
-and tyname_word8 = mktyname "Word8" "word8" 
+and tyname_word8 = mktyname "Word8" "word8"
     {tnStamp=mkSMLStamp(),  tnKind=ARITYkind 0, tnEqu=TRUEequ,  tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE}
 val tyname_bogus =
   mkSML "bogus" {tnStamp=mkSMLStamp(), tnKind=ARITYkind 0, tnEqu=TRUEequ, tnSort=PARAMETERts, tnLevel=0, tnConEnv=ref NONE};
@@ -208,7 +208,7 @@ fun protectCurrentBindingLevel fct =
 	 binding_level := savedLevel)
          handle x => (binding_level := savedLevel;
 		      raise x)
-    end 
+    end
 ;
 
 
@@ -291,7 +291,7 @@ fun newTypeParameter equ imp ovl =
 ;
 
 fun newTypeParameters [] = []
-  | newTypeParameters (h::t) = 
+  | newTypeParameters (h::t) =
     ((VARt (newTypeParameter false (* cvr: should this be true? *) false false)
      ::
      newTypeParameters t))
@@ -319,14 +319,14 @@ fun kindTyName (tn:TyName) = #tnKind (!(#info tn));
 fun kindTyApp tyapp =
     case tyapp of
       NAMEtyapp tn => kindTyName tn
-    | APPtyapp (tyapp,app) => 
-         (case kindTyApp tyapp of 
+    | APPtyapp (tyapp,app) =>
+         (case kindTyApp tyapp of
            ARROWkind(k,k') => k'
          | _ => fatalError "kindTyApp")
 and kindTyFun tyfun =
     case tyfun of
       APPtyfun tyapp => kindTyApp tyapp
-    | LAMtyfun (tn,tyfun) => 
+    | LAMtyfun (tn,tyfun) =>
            ARROWkind(kindTyName tn,kindTyFun tyfun)
     | TYPEtyfun (vs,tau) => ARITYkind (List.length vs)
 ;
@@ -334,59 +334,59 @@ and kindTyFun tyfun =
 fun equTyName (tn:TyName) = #tnEqu (!(#info tn));
 
 fun etaExpandTyApp tyapp =
-    case kindTyApp tyapp of 
-	ARITYkind n => 
+    case kindTyApp tyapp of
+	ARITYkind n =>
 	    let val _ = incrBindingLevel();
-		val vs = foldInt 
+		val vs = foldInt
 		          (fn n => fn vs =>
-			   newTypeParameter false false false::vs) 
-			  [] 
+			   newTypeParameter false false false::vs)
+			  []
 			  n
 	    in  decrBindingLevel();
 		TYPEtyfun(vs,CONt(map TypeOfTypeVar  vs,tyapp))
 	    end
       | _ => fatalError "etaExpandTyApp";
-fun etaExpandTyFun tyfun = 
-    case tyfun of 
+fun etaExpandTyFun tyfun =
+    case tyfun of
 	APPtyfun tyapp => etaExpandTyApp tyapp
       | TYPEtyfun _ => tyfun
       | LAMtyfun _ => fatalError "etaExpandTyFun";
-      
+
 (* cvr: new, optimized and highly dodgy copying *)
 
-local 
-fun restrictBns bns1 bns2 = 
-    drop (fn (tn1,NAMEtyapp tn1') => 
+local
+fun restrictBns bns1 bns2 =
+    drop (fn (tn1,NAMEtyapp tn1') =>
 	       exists (fn (tn2,NAMEtyapp tn2') =>
 		           tn1 = tn2 andalso tn1' = tn2'
 	               | _ => false) bns2
 	  |  _ => false) bns1;
-fun restrictBvs bvs1 bvs2 = 
-    drop (fn (tv1,VARt tv1') => 
+fun restrictBvs bvs1 bvs2 =
+    drop (fn (tv1,VARt tv1') =>
 	       exists (fn (tv2,VARt tv2') =>
 		           tv1 = tv2 andalso tv1' = tv2'
 			| _ => false) bvs2
 	  |  _ => false) bvs1;
-fun copyAndRealiseTyName (tn:TyName) tyfun =  
-    case tn of	
+fun copyAndRealiseTyName (tn:TyName) tyfun =
+    case tn of
 	{qualid,info = ref { tnKind,tnEqu,tnStamp,tnSort = _, tnLevel,tnConEnv}} =>
-	    {qualid = qualid, 
+	    {qualid = qualid,
 	     info = ref {tnKind = tnKind,
-			 tnEqu = tnEqu, 
-			 tnSort = REAts tyfun, 
+			 tnEqu = tnEqu,
+			 tnSort = REAts tyfun,
 			 tnStamp = newTyNameStamp(),
 			 tnLevel = tnLevel,
 			 tnConEnv = ref NONE}}
 ;
 
-fun copyEnv copyInfo bns bvs env = 
+fun copyEnv copyInfo bns bvs env =
     case env of
       NILenv => (bns,bvs,true,env)
     | BNDenv(k, info, env') =>
 	  let val (bns,bvs,sinfo,cinfo) = copyInfo bns bvs info
 	      val (bns,bvs,senv',cenv') = copyEnv copyInfo bns bvs env'
 	  in
-		if sinfo andalso senv' 
+		if sinfo andalso senv'
 		    then (bns,bvs,true,env)
 		else (bns,bvs,false,BNDenv(k,cinfo,cenv'))
 	  end
@@ -394,18 +394,18 @@ fun copyEnv copyInfo bns bvs env =
 	  let val (bns,bvs,senv1,cenv1) = copyEnv copyInfo bns bvs env1
 	      val (bns,bvs,senv2,cenv2) = copyEnv copyInfo bns bvs env2
 	  in
-	      if senv1 andalso senv2 
+	      if senv1 andalso senv2
 		  then (bns,bvs,true,env)
 	      else (bns,bvs,false,COMPenv(cenv1,cenv2))
 	  end
-    | TOPenv(t, env') => 
+    | TOPenv(t, env') =>
 	let val ct = Hasht.new 17
-	    val (bns,bvs,st) = 
-		Hasht.fold 
-		(fn k => fn info => fn (bns,bvs,st) => 
+	    val (bns,bvs,st) =
+		Hasht.fold
+		(fn k => fn info => fn (bns,bvs,st) =>
 		 let val (bns,bvs,sinfo,cinfo) = copyInfo bns bvs info
 		 in
-		     if sinfo 
+		     if sinfo
 		     then (Hasht.insert ct k cinfo;
 			   (bns,bvs,st))
 		     else (Hasht.insert ct k cinfo;
@@ -421,46 +421,46 @@ fun copyEnv copyInfo bns bvs env =
 	end
 ;
 
-fun copyGlobal copyInfo bns bvs (global as {qualid,info}) =  
+fun copyGlobal copyInfo bns bvs (global as {qualid,info}) =
 	    let val (bns,bvs,sinfo,cinfo) = copyInfo bns bvs info
 	     in
-		 if sinfo 
+		 if sinfo
 		 then (bns,bvs,true,global)
 		 else (bns,bvs,false,{qualid = qualid,info = cinfo})
 	     end
 ;
 
-fun copyTyNameSet tnSort bns bvs T =  
-  let val bns' = 
+fun copyTyNameSet tnSort bns bvs T =
+  let val bns' =
          map (fn tn =>
 	        case tn of
 		    {qualid,info = ref {tnKind,tnEqu,tnStamp,tnSort = _,tnLevel,tnConEnv}} =>
-                     let val tn' = {qualid = qualid, 
+                     let val tn' = {qualid = qualid,
 				    info = ref {tnKind = tnKind,
-						tnEqu = tnEqu, 
-						tnSort = tnSort, 
+						tnEqu = tnEqu,
+						tnSort = tnSort,
 						tnStamp = newTyNameStamp(),
 						tnLevel= !binding_level,
 						tnConEnv = ref NONE}}
 		     in (tn, NAMEtyapp tn')
-		     end) 
+		     end)
 	 T
       val bns'' = bns'@bns
       fun copyConEnvs bns bvs [] = (bns,bvs,[])
 	| copyConEnvs bns bvs ((tn,NAMEtyapp tn')::bns') =
 	   (case !(#tnConEnv (!(#info tn))) of
-		NONE => 
-		    let 
+		NONE =>
+		    let
 			val (bns,bvs,T') = copyConEnvs bns bvs bns'
 		    in
 			(bns,bvs,tn'::T')
 		    end
-	      | SOME conenv => 
-		    let val (bns,bvs,sconenv,cconenv) = 
+	      | SOME conenv =>
+		    let val (bns,bvs,sconenv,cconenv) =
 			    copyConEnv bns bvs conenv
 			val (bns,bvs,T') = copyConEnvs bns bvs bns'
 		    in
-			if sconenv 
+			if sconenv
 		        then setTnConEnv (#info tn') (#tnConEnv(!(#info tn)))
 			else setTnConEnv (#info tn') (ref (SOME cconenv));
 			(bns,bvs,tn'::T')
@@ -470,28 +470,28 @@ fun copyTyNameSet tnSort bns bvs T =
    in
         (restrictBns bns bns',bvs,T',bns')
    end
-and copyTyName tnSort bns bvs tn =  
+and copyTyName tnSort bns bvs tn =
     case copyTyNameSet tnSort bns bvs [tn] of
       (bns,bvs,[tn'],[tn2tn']) =>
 	(bns,bvs,tn',tn2tn')
     | _ => fatalError "copyTyName"
-and copyType bns bvs tau = 
+and copyType bns bvs tau =
     case tau of
 	VARt var =>
-	    (let val ctau = lookup var bvs 
-		 val stau = case ctau of 
-		                VARt var' => var = var' 
+	    (let val ctau = lookup var bvs
+		 val stau = case ctau of
+		                VARt var' => var = var'
 			     |  _ => false
 	     in
 		 (bns,bvs,stau,ctau)
 	     end
-	     handle Subscript => 
+	     handle Subscript =>
 		 (case #tvKind(!var) of
 		      NoLink => (bns,bvs,true,tau)
 		    | Explicit s => (bns,bvs,true,tau)
 		    | LinkTo tau' =>
-			  let val (bns,bvs,shared,tau'') = 
-			      copyType bns bvs tau' 
+			  let val (bns,bvs,shared,tau'') =
+			      copyType bns bvs tau'
 			  in
  			      if shared then (bns,(var,tau)::bvs,true,tau)
 			      else (bns,(var,tau'')::bvs,false,tau'')
@@ -500,64 +500,64 @@ and copyType bns bvs tau =
 	    let val (bns,bvs,st,ct) = copyType bns bvs t
 		val (bns,bvs,su,cu) = copyType bns bvs u
 	    in
-		if st andalso su 
+		if st andalso su
 		    then (bns,bvs,true,tau)
 		else (bns,bvs,false,ARROWt(ct,cu))
 	    end
       | CONt(ts, tyapp) =>
 	    let val (bns,bvs,sts,cts) = copyTypeList bns bvs ts
 		val (bns,bvs,styapp,ctyapp) = copyTyApp bns bvs tyapp
-	    in 
-		if sts andalso styapp 
+	    in
+		if sts andalso styapp
 		    then  (bns,bvs,true,tau)
 		else (bns,bvs,false,CONt(cts,ctyapp))
 	    end
       | RECt (ref {fields, rho = rowtype}) =>
 	    let val (bns,bvs,sfields,cfields) = copyFields bns bvs fields
-	    in 
+	    in
 		if sfields then (bns,bvs,true,tau)
 		else (bns,bvs,false,RECt (ref {fields = cfields,rho = rowtype}))
 	    end
-      | PACKt X => 
+      | PACKt X =>
 	    let val (bns,bvs,sX,cX) = copyExMod bns bvs X
 	    in
 		if sX then (bns,bvs,true,tau)
 		else (bns,bvs,false,PACKt cX)
 	    end
 and copyTypeList bns bvs (ts as []) = (bns,bvs,true,ts)
-|   copyTypeList bns bvs (tts as (t::ts)) = 
+|   copyTypeList bns bvs (tts as (t::ts)) =
     let val (bns,bvs,st,ct)= copyType bns bvs t
 	val (bns,bvs,sts,cts) = copyTypeList bns bvs ts
-    in  
-	if st andalso sts 
-	    then (bns,bvs,true,tts)  
+    in
+	if st andalso sts
+	    then (bns,bvs,true,tts)
 	else (bns,bvs,false,ct::cts)
     end
 and copyFields bns bvs (fields as []) = (bns,bvs,true,fields)
-|   copyFields bns bvs (fields as ((field as (lab,t))::fields')) = 
+|   copyFields bns bvs (fields as ((field as (lab,t))::fields')) =
     let val (bns,bvs,st,ct)= copyType bns bvs t
 	val (bns,bvs,sfields',cfields') = copyFields bns bvs fields'
-    in  
-	if st andalso sfields' 
-	    then (bns,bvs,true,fields)    
+    in
+	if st andalso sfields'
+	    then (bns,bvs,true,fields)
 	else (bns,bvs,false,(lab,ct)::cfields')
 
     end
-and copyTypeScheme bns bvs (scheme as TypeScheme {tscParameters=vs,tscBody=ty})  = 
+and copyTypeScheme bns bvs (scheme as TypeScheme {tscParameters=vs,tscBody=ty})  =
         let val _ = incrBindingLevel()
-            val vs' = map refreshTypeParameter vs 
+            val vs' = map refreshTypeParameter vs
 	    val bvs' = zip2 vs (map VARt vs')
 	    val (bns,bvs,sty,cty) = copyType bns (bvs'@bvs) ty
-	    val bvs = restrictBvs bvs bvs' 
-        in   
+	    val bvs = restrictBvs bvs bvs'
+        in
 	    decrBindingLevel();
-            if sty 
+            if sty
 	    then (bns,bvs,true,scheme)
 	    else (bns,bvs,false,TypeScheme{tscParameters = vs',tscBody = cty})
         end
-and copyTyApp bns bvs tyapp  =  
+and copyTyApp bns bvs tyapp  =
     case tyapp of
-       NAMEtyapp tyname => 
+       NAMEtyapp tyname =>
          (let val ctyapp = lookup tyname bns
 	  in
 		 (bns,bvs,false,ctyapp)
@@ -567,68 +567,68 @@ and copyTyApp bns bvs tyapp  =
 		  VARIABLEts => (bns,bvs,true,tyapp)
 		| PARAMETERts => (bns,bvs,true,tyapp)
 		| REAts tyfun =>
-		      let 
-			  val (bns,bvs,styfun,ctyfun) = 
-			      copyTyFun bns bvs tyfun 
+		      let
+			  val (bns,bvs,styfun,ctyfun) =
+			      copyTyFun bns bvs tyfun
 		      in
 			  if styfun then
-			      let val ctyname = 
+			      let val ctyname =
 				      copyAndRealiseTyName tyname tyfun
 				  val ctyapp = NAMEtyapp ctyname
 			      in ((tyname,ctyapp)::bns,bvs,false,ctyapp)
-			      end 
+			      end
 			  else
-			      let val ctyname = 
+			      let val ctyname =
 				      copyAndRealiseTyName tyname ctyfun
 				  val ctyapp = NAMEtyapp ctyname
 			      in ((tyname,ctyapp)::bns,bvs,false,ctyapp)
 			      end
 		      end))
-    |  APPtyapp (tyapp',tyfun) =>  
+    |  APPtyapp (tyapp',tyfun) =>
 	    let val (bns,bvs,styapp',ctyapp') = copyTyApp bns bvs tyapp'
 		val (bns,bvs,styfun,ctyfun) = copyTyFun bns bvs tyfun
 	    in
-		if styapp' andalso styfun 
+		if styapp' andalso styfun
 		    then (bns,bvs,true,tyapp)
 		else (bns,bvs,false,APPtyapp(ctyapp',ctyfun))
 	    end
 and copyTyFun bns bvs tyfun =
-    case tyfun of 
-       TYPEtyfun (vs,ty) => 
+    case tyfun of
+       TYPEtyfun (vs,ty) =>
         let val _ = incrBindingLevel()
-            val vs' = map refreshTypeParameter vs 
+            val vs' = map refreshTypeParameter vs
 	    val bvs' = zip2 vs (map VARt vs')
 	    val (bns,bvs,sty,cty) = copyType bns (bvs'@bvs) ty
-	    val bvs = restrictBvs bvs bvs' 
-        in   
+	    val bvs = restrictBvs bvs bvs'
+        in
 	    decrBindingLevel();
-            if sty 
+            if sty
 	    then (bns,bvs,true,tyfun)
 	    else (bns,bvs,false,TYPEtyfun(vs',cty))
         end
     |  LAMtyfun (tn,tyfun') =>
         let val () = incrBindingLevel ();
             val (bns,bvs,tn',tn2tn') = copyTyName PARAMETERts bns bvs tn
-	    val (bns,bvs,styfun',ctyfun') = 
-		copyTyFun (tn2tn'::bns) bvs tyfun' 
+	    val (bns,bvs,styfun',ctyfun') =
+		copyTyFun (tn2tn'::bns) bvs tyfun'
 	    val bns = restrictBns bns [tn2tn']
-        in   
+        in
             decrBindingLevel();
             if styfun'
 	    then (bns,bvs,true,tyfun)
 	    else (bns,bvs,false,LAMtyfun(tn',ctyfun'))
         end
-    |  APPtyfun tyapp => 
+    |  APPtyfun tyapp =>
         let val (bns,bvs,styapp,ctyapp) = copyTyApp bns bvs tyapp
-        in   
+        in
             if styapp
 	    then (bns,bvs,true,tyfun)
 	    else (bns,bvs,false,APPtyfun ctyapp)
         end
-and copyConInfo bns bvs (coninfo as ref { conArity, conIsGreedy, conSpan, conTag, conType}) = 
+and copyConInfo bns bvs (coninfo as ref { conArity, conIsGreedy, conSpan, conTag, conType}) =
     let val (bns,bvs,sconType,cconType) = copyTypeScheme bns bvs conType
-    in 
-	if sconType 
+    in
+	if sconType
 	then (bns,bvs,true,coninfo)
 	else (bns,
 	      bvs,
@@ -640,19 +640,19 @@ and copyConInfo bns bvs (coninfo as ref { conArity, conIsGreedy, conSpan, conTag
 		   conType = cconType})
     end
 and copyConStatusDesc bns bvs csd =
-    (case csd of 
-      CONname coninfo => 
+    (case csd of
+      CONname coninfo =>
 	  let val (bns,bvs,sconinfo,cconinfo) = copyConInfo bns bvs coninfo
 	  in
-	      if sconinfo 
+	      if sconinfo
 	      then (bns,bvs,true,csd)
 	      else (bns,bvs,false,CONname cconinfo)
 	  end
     |   _ => (bns,bvs,true,csd))
-and copyVarEnv bns bvs env = 
-    copyEnv (copyGlobal 
+and copyVarEnv bns bvs env =
+    copyEnv (copyGlobal
 	     (fn bns => fn bvs =>
-	      fn (info as (scheme,status)) =>  
+	      fn (info as (scheme,status)) =>
 	      let val (bns,bvs,sscheme,cscheme) = copyTypeScheme bns bvs scheme
 		  val (bns,bvs,sstatus,cstatus) = copyConStatusDesc bns bvs status
 	      in
@@ -666,16 +666,16 @@ and copyConBindList bns bvs (coninfos as []) =
 |   copyConBindList bns bvs (coninfos as (coninfo :: coninfos')) =
     let val (bns,bvs,sconinfo,cconinfo)= copyGlobal copyConInfo bns bvs coninfo
 	val (bns,bvs,sconinfos',cconinfos') = copyConBindList bns bvs coninfos'
-    in  
-	if sconinfo andalso sconinfos' 
-	    then (bns,bvs,true,coninfos)    
+    in
+	if sconinfo andalso sconinfos'
+	    then (bns,bvs,true,coninfos)
 	else (bns,bvs,false,cconinfo::cconinfos')
     end
 and copyConEnv bns bvs conenv =
     case conenv of
-	ConEnv CE => 
+	ConEnv CE =>
 	    let val (bns,bvs,sCE,cCE) = copyConBindList bns bvs CE
-	    in 
+	    in
 		if sCE
 		then (bns,bvs,true,conenv)
 		else (bns,bvs,false,ConEnv cCE)
@@ -683,22 +683,22 @@ and copyConEnv bns bvs conenv =
       | LAMconenv(tn,conenv') =>
         let val () = incrBindingLevel ();
             val (bns,bvs,tn',tn2tn') = copyTyName PARAMETERts bns bvs tn;
-	    val (bns,bvs,sconenv',cconenv') = 
+	    val (bns,bvs,sconenv',cconenv') =
 		copyConEnv (tn2tn'::bns) bvs conenv'
 	    val bns = restrictBns bns [tn2tn']
-        in   
+        in
             decrBindingLevel();
             if sconenv'
 	    then (bns,bvs,true,conenv)
 	    else (bns,bvs,false,LAMconenv(tn',cconenv'))
         end
-and copyTyEnv bns bvs TE = 
-    copyEnv (fn bns => fn bvs => 
-	     fn (info as (tyfun,CE)) => 
+and copyTyEnv bns bvs TE =
+    copyEnv (fn bns => fn bvs =>
+	     fn (info as (tyfun,CE)) =>
 	     let val (bns,bvs,styfun,ctyfun) = copyTyFun bns bvs tyfun
 		 val (bns,bvs,sCE,cCE) = copyConEnv bns bvs CE
 	     in
-		 if styfun andalso sCE 
+		 if styfun andalso sCE
 		     then (bns,bvs,true,info)
 		 else (bns,bvs,false,(ctyfun,cCE))
 	     end)
@@ -712,8 +712,8 @@ and copyStr bns bvs S =
 		 val (bns,bvs,sTE,cTE) = copyTyEnv bns bvs TE
 		 val (bns,bvs,sVE,cVE) = copyVarEnv bns bvs VE
 	     in
-	        if sME andalso sFE andalso sGE andalso sTE andalso sVE 
-		then (bns,bvs,true,S) 
+	        if sME andalso sFE andalso sGE andalso sTE andalso sVE
+		then (bns,bvs,true,S)
 		else (bns,bvs,false,STRstr (cME,cFE,cGE,cTE,cVE))
 	     end
      |  SEQstr (S1,S2) =>
@@ -737,27 +737,27 @@ and copyRecStr bns bvs RS =
     | NONrec S =>
 	     let val (bns,bvs,sS,cS) = copyStr bns bvs S
 	     in
-		 if sS 
+		 if sS
 		     then (bns,bvs,true,RS)
 		 else (bns,bvs,false,NONrec(cS))
 	     end
-and copyMod bns bvs M = 
+and copyMod bns bvs M =
     case M of
-      STRmod RS => 
+      STRmod RS =>
 	  let val (bns,bvs,sRS,cRS) = copyRecStr bns bvs RS
 	  in
              if sRS
-	     then (bns,bvs,true,M) 
+	     then (bns,bvs,true,M)
 	     else (bns,bvs,false,STRmod cRS)
-	  end		  
-    | FUNmod F => 
+	  end
+    | FUNmod F =>
 	  let val (bns,bvs,sF,cF) = copyFun bns bvs F
 	  in
              if sF
-	     then (bns,bvs,true,M) 
+	     then (bns,bvs,true,M)
 	     else (bns,bvs,false,FUNmod cF)
-	  end		
-and copyModEnv bns bvs ME = 
+	  end
+and copyModEnv bns bvs ME =
     copyEnv (copyGlobal copyRecStr) bns bvs ME
 and copyFunEnv bns bvs FE =
     copyEnv (copyGlobal copyFun) bns bvs FE
@@ -765,35 +765,35 @@ and copySigEnv bns bvs GE =
     copyEnv (copyGlobal copySig) bns bvs GE
 and copyFun bns bvs (F as (T,M,X)) =
     let val () = incrBindingLevel ();
-	val (bns,bvs,T',T2T') = copyTyNameSet PARAMETERts bns bvs T 
+	val (bns,bvs,T',T2T') = copyTyNameSet PARAMETERts bns bvs T
 	val (bns,bvs,sM,cM) = copyMod ((T2T')@bns) bvs M
 	val (bns,bvs,sX,cX) = copyExMod bns bvs X
 	val bns = restrictBns bns T2T'
     in
-        decrBindingLevel();	
-	if sM andalso sX 
+        decrBindingLevel();
+	if sM andalso sX
 	    then (bns,bvs,true,F)
 	else (bns,bvs,false,(T',cM,cX))
     end
-and copyExMod bns bvs (X as EXISTSexmod(T,M)) = 
+and copyExMod bns bvs (X as EXISTSexmod(T,M)) =
     let val () = incrBindingLevel ();
-	val (bns,bvs,T',T2T') = copyTyNameSet PARAMETERts bns bvs T 
+	val (bns,bvs,T',T2T') = copyTyNameSet PARAMETERts bns bvs T
 	val (bns,bvs,sM,cM) = copyMod ((T2T')@bns) bvs M
 	val bns = restrictBns bns T2T'
     in
-        decrBindingLevel();	
-	if sM 
+        decrBindingLevel();
+	if sM
 	then (bns,bvs,true,X)
 	else (bns,bvs,false,EXISTSexmod(T',cM))
     end
-and copySig bns bvs (G as LAMBDAsig(T,M)) = 
+and copySig bns bvs (G as LAMBDAsig(T,M)) =
     let val () = incrBindingLevel ();
-	val (bns,bvs,T',T2T') = copyTyNameSet PARAMETERts bns bvs T 
+	val (bns,bvs,T',T2T') = copyTyNameSet PARAMETERts bns bvs T
 	val (bns,bvs,sM,cM) = copyMod ((T2T')@bns) bvs M
 	val bns = restrictBns bns T2T'
     in
-        decrBindingLevel();	
-	if sM 
+        decrBindingLevel();
+	if sM
 	then (bns,bvs,true,G)
 	else (bns,bvs,false,LAMBDAsig(T',cM))
     end;
@@ -808,128 +808,128 @@ in
 	in
 	    (T',T2T')
 	end
-    val copyType = fn bns => fn bvs => fn t => 
+    val copyType = fn bns => fn bvs => fn t =>
 	#4 (copyType bns bvs t)
-    val copyTyFun = fn bns => fn bvs => fn tyfun => 
+    val copyTyFun = fn bns => fn bvs => fn tyfun =>
 	#4 (copyTyFun bns bvs tyfun)
-    val copyTyApp = fn bns => fn bvs => fn tyapp => 
+    val copyTyApp = fn bns => fn bvs => fn tyapp =>
 	#4 (copyTyApp bns bvs tyapp)
-    val copyConEnv = fn bns => fn bvs => fn conenv => 
+    val copyConEnv = fn bns => fn bvs => fn conenv =>
 	#4 (copyConEnv bns bvs conenv)
-    val copyStr = fn bns => fn bvs => fn S => 
+    val copyStr = fn bns => fn bvs => fn S =>
 	#4 (copyStr bns bvs S)
-    val copyRecStr = fn bns => fn bvs => fn S => 
+    val copyRecStr = fn bns => fn bvs => fn S =>
 	#4 (copyRecStr bns bvs S)
-    val copyGenFun = fn bns => fn bvs => fn F => 
-	#4 (copyFun bns bvs F) 
-    val copyMod = fn bns => fn bvs => fn M => 
+    val copyGenFun = fn bns => fn bvs => fn F =>
+	#4 (copyFun bns bvs F)
+    val copyMod = fn bns => fn bvs => fn M =>
 	#4 (copyMod bns bvs M)
-    val copyExMod = fn bns => fn bvs => fn X => 
+    val copyExMod = fn bns => fn bvs => fn X =>
 	#4 (copyExMod bns bvs X)
-    val copySig = fn bns => fn bvs => fn G => 
+    val copySig = fn bns => fn bvs => fn G =>
 	#4 (copySig bns bvs G)
-    val copyTypeScheme = fn bns => fn bvs => fn scheme => 
+    val copyTypeScheme = fn bns => fn bvs => fn scheme =>
 	#4 (copyTypeScheme bns bvs scheme)
 end;
 
 (* free variables (type names, type vars and rho vars) *)
 (* cvr: TODO freevars currently done in reverse order for envs --- change this as it affects
    pretty printing*)
-fun freeVarsType bns bvs (fnvs as (fns, fvs, frvs)) tau = 
+fun freeVarsType bns bvs (fnvs as (fns, fvs, frvs)) tau =
           case normType tau of
                 VARt var =>
-                  if member var fvs orelse member var bvs 
-                  then fnvs 
+                  if member var fvs orelse member var bvs
+                  then fnvs
                   else (fns, var::fvs,frvs)
               | ARROWt(t,t') =>
                   (freeVarsType bns bvs (freeVarsType bns bvs fnvs t) t')
               | CONt(ts, tyapp) =>
-                 freeVarsTyApp bns bvs (foldL (fn t => fn fnvs => freeVarsType bns bvs fnvs t) fnvs ts) tyapp 
+                 freeVarsTyApp bns bvs (foldL (fn t => fn fnvs => freeVarsType bns bvs fnvs t) fnvs ts) tyapp
               | RECt (ref{fields, rho = rowtype}) =>
-                 freeVarsRowType bns bvs 
+                 freeVarsRowType bns bvs
 		 (foldL (fn (lab,ty) => fn fnvs => freeVarsType bns bvs fnvs ty) fnvs fields)
                  rowtype
-              | PACKt X => freeVarsExMod bns bvs fnvs X  
-and freeVarsRowType bns bvs (fnvs as (fns,fvs,frvs)) rowtype = 
+              | PACKt X => freeVarsExMod bns bvs fnvs X
+and freeVarsRowType bns bvs (fnvs as (fns,fvs,frvs)) rowtype =
     case !rowtype of
-	 NILrow => fnvs 
-      |  VARrow rowvar => 
-	     if member rowvar frvs 
-		 then fnvs 
-	     else (fns,fvs,rowvar::frvs) 
+	 NILrow => fnvs
+      |  VARrow rowvar =>
+	     if member rowvar frvs
+		 then fnvs
+	     else (fns,fvs,rowvar::frvs)
       |  FIELDrow (lab,ty,rowtype) =>
-		 freeVarsRowType bns bvs 
+		 freeVarsRowType bns bvs
 		 (freeVarsType bns bvs fnvs ty)
                  rowtype
       |  LINKrow rowtype => fatalError "freeVarRowType"
-and freeVarsTypeScheme   bns bvs fnvs (TypeScheme {tscParameters,tscBody})  = 
+and freeVarsTypeScheme   bns bvs fnvs (TypeScheme {tscParameters,tscBody})  =
     freeVarsType bns (tscParameters@bvs) fnvs tscBody
-and freeVarsTyApp bns bvs (fnvs as (fns, fvs,frvs)) tyapp  = 
+and freeVarsTyApp bns bvs (fnvs as (fns, fvs,frvs)) tyapp  =
     case tyapp of
-       NAMEtyapp tyname => 
+       NAMEtyapp tyname =>
 (*                  if member tyname fns orelse member tyname bns  *)
-                  if exists (isEqTN tyname) fns 
+                  if exists (isEqTN tyname) fns
 		      orelse exists (isEqTN tyname) bns
-                  then fnvs 
+                  then fnvs
                   else (tyname::fns,fvs,frvs)
-    |  APPtyapp (tyapp,tyfun) => 
+    |  APPtyapp (tyapp,tyfun) =>
         freeVarsTyFun bns bvs (freeVarsTyApp bns bvs fnvs tyapp) tyfun
 and freeVarsTyFun bns bvs fnvs tyfun =
-    case normTyFun tyfun of 
+    case normTyFun tyfun of
        TYPEtyfun (vs,ty) => freeVarsType bns (vs@bvs) fnvs ty
     |  LAMtyfun (v,tyfun) => freeVarsTyFun (v::bns) bvs fnvs tyfun
     |  APPtyfun tyapp => freeVarsTyApp bns bvs fnvs tyapp
 and freeVarsVarInfo bns bvs fnvs {qualid=_,info = (sc,_)} = freeVarsTypeScheme bns bvs fnvs sc
-and freeVarsVarEnv bns bvs fnvs VE = 
-       foldEnv (fn _ => fn info => fn fnvs => freeVarsVarInfo bns bvs fnvs info) fnvs  VE 
-and freeVarsTyEnv bns bvs fnvs VE = 
+and freeVarsVarEnv bns bvs fnvs VE =
+       foldEnv (fn _ => fn info => fn fnvs => freeVarsVarInfo bns bvs fnvs info) fnvs  VE
+and freeVarsTyEnv bns bvs fnvs VE =
        foldEnv (fn _ => fn tystr =>  fn fnvs => freeVarsTyStr bns bvs fnvs tystr) fnvs VE
-and freeVarsTyStr bns bvs fnvs (tyfun,conenv) = 
+and freeVarsTyStr bns bvs fnvs (tyfun,conenv) =
       freeVarsConEnv bns bvs (freeVarsTyFun bns bvs fnvs tyfun) conenv
 and freeVarsConEnv bns bvs fnvs conenv =
       case conenv of
 	  ConEnv CE =>
-	      foldL (fn {info=ref {conType,...},...} => 
+	      foldL (fn {info=ref {conType,...},...} =>
 		     fn fnvs => freeVarsTypeScheme bns bvs fnvs conType)
 	             fnvs CE
       | LAMconenv(tn,conenv) =>
 	    freeVarsConEnv (tn::bns) bvs fnvs conenv
-and freeVarsStr  bns bvs fnvs S = 
-    case S of 
+and freeVarsStr  bns bvs fnvs S =
+    case S of
        STRstr (ME,FE,GE,TE,VE) =>
         freeVarsModEnv bns bvs (freeVarsFunEnv bns bvs (freeVarsSigEnv bns bvs (freeVarsTyEnv bns bvs (freeVarsVarEnv bns bvs fnvs VE) TE) GE) FE) ME
-    |  SEQstr (S,S') => 
+    |  SEQstr (S,S') =>
         (freeVarsStr bns bvs (freeVarsStr bns bvs fnvs S) S')
-and freeVarsRecStr  bns bvs fnvs RS = 
+and freeVarsRecStr  bns bvs fnvs RS =
     case RS of
-	RECrec (RS,RS') => 
+	RECrec (RS,RS') =>
 	    (freeVarsRecStr bns bvs (freeVarsRecStr bns bvs fnvs RS) RS')
-      | NONrec S => 
+      | NONrec S =>
 	    (freeVarsStr bns bvs fnvs S)
-and freeVarsMod bns bvs fnvs M = 
+and freeVarsMod bns bvs fnvs M =
     case M of
       STRmod S => freeVarsRecStr bns bvs fnvs S
     | FUNmod F => freeVarsGenFun bns bvs fnvs F
 and freeVarsModInfo bns bvs fnvs {qualid=_,info = RS} = freeVarsRecStr bns bvs fnvs RS
-and freeVarsModEnv bns bvs fnvs ME = 
+and freeVarsModEnv bns bvs fnvs ME =
        foldEnv (fn id => fn info => fn fnvs => freeVarsModInfo bns bvs fnvs info) fnvs ME
-and freeVarsGenFun  bns bvs fnvs (T,M,X) = 
+and freeVarsGenFun  bns bvs fnvs (T,M,X) =
        let val bns' = T @ bns in
           (freeVarsExMod (bns') bvs (freeVarsMod bns' bvs fnvs M) X)
        end
 and freeVarsFunInfo bns bvs fnvs {qualid=_,info = F} = freeVarsGenFun bns bvs fnvs F
 and freeVarsSigInfo bns bvs fnvs {qualid=_,info = G} = freeVarsSig bns bvs fnvs G
-and freeVarsFunEnv bns bvs fnvs FE = 
+and freeVarsFunEnv bns bvs fnvs FE =
        foldEnv (fn id => fn info => fn fnvs => freeVarsFunInfo bns bvs fnvs info) fnvs FE
 and freeVarsExMod  bns bvs fnvs (EXISTSexmod(T,M)) = freeVarsMod  (T@bns) bvs fnvs M
 and freeVarsSig  bns bvs fnvs (LAMBDAsig(T,M)) = freeVarsMod  (T@bns) bvs fnvs M
 and freeVarsSigEnv bns bvs fnvs GE =
        foldEnv (fn id => fn {qualid, info = G} => fn fnvs => freeVarsSig bns bvs fnvs G) fnvs GE
-and freeVarsExEnv bns bvs fnvs (EXISTS(T,(ME,FE,GE,VE,TE))) = 
+and freeVarsExEnv bns bvs fnvs (EXISTS(T,(ME,FE,GE,VE,TE))) =
         freeVarsModEnv bns bvs (freeVarsFunEnv bns bvs (freeVarsSigEnv bns bvs (freeVarsTyEnv bns bvs (freeVarsVarEnv bns bvs fnvs VE) TE) GE) FE) ME
 
-and apptycon tys tyfun = 
-   case tyfun of 
+and apptycon tys tyfun =
+   case tyfun of
     (* TYPEtyfun([],tau) => tau *)
      TYPEtyfun(tvs,tau) => copyType [] (zip2 tvs tys) tau
    | APPtyfun tyapp => CONt (tys,tyapp)
@@ -937,27 +937,27 @@ and apptycon tys tyfun =
 and apptyfun tyfun tyfun' =
    case tyfun of
 
-(*     LAMtyfun(tn,tyfun) => 
+(*     LAMtyfun(tn,tyfun) =>
           let val () = incrBindingLevel ();
-              val (tn',tn2tn') = copyTyName (REAts tyfun') [] [] tn;  
+              val (tn',tn2tn') = copyTyName (REAts tyfun') [] [] tn;
                 (* cvr: rewrite using proper substitution? *)
               val tyfun'' = LAMtyfun(tn', copyTyFun [tn2tn'] [] tyfun)
-          in 
+          in
               decrBindingLevel();
               tyfun'
           end
 *)
-     LAMtyfun(tn,tyfun) => 
+     LAMtyfun(tn,tyfun) =>
           let val () = incrBindingLevel ();
-              val (tn',tn2tn') = copyTyName (REAts tyfun') [] [] tn;  
+              val (tn',tn2tn') = copyTyName (REAts tyfun') [] [] tn;
                 (* cvr: rewrite using proper substitution? *)
               val tyfun'' = copyTyFun [tn2tn'] [] tyfun
-          in 
+          in
               decrBindingLevel();
               tyfun''
           end
    | APPtyfun tyapp => APPtyfun(APPtyapp(tyapp,tyfun'))
-   | _ => fatalError "apptyfun"   
+   | _ => fatalError "apptyfun"
 and type_subst UE tau = copyType [] UE tau
 (*
   case normType tau of
@@ -983,7 +983,7 @@ and normType tau =
            |  _ => tau)
     | RECt r =>
         (normalizeRecType r; tau)
-    | CONt (tys,tyapp) => 
+    | CONt (tys,tyapp) =>
        (* apptycon tys (normTyApp tyapp) not good enough *)
 	(case normTyApp tyapp of
 	    APPtyfun tyapp =>CONt(tys,tyapp)
@@ -995,32 +995,32 @@ and normTyApp tyapp =
         (case #tnSort (!(#info tn)) of
 (*  cvr: TODO Review path compression invalidates the hack of forgetting realisations... because we identify shared type names by swinging pointers,
 instead of copying. Which do we want?
-              REAts tyfun => 
+              REAts tyfun =>
                let val tyfun' = normTyFun tyfun in
                    setTnSort (#info tn) (REAts tyfun');
                    tyfun'
                end
 *)
-              REAts tyfun => 
-             	   normTyFun tyfun 
+              REAts tyfun =>
+             	   normTyFun tyfun
             | _ => APPtyfun tyapp
          )
       | APPtyapp (tyapp,tyfun) =>
 	 (case normTyApp tyapp of
 	    APPtyfun tyapp => APPtyfun (APPtyapp (tyapp,tyfun))
           | tyfun' => normTyFun (apptyfun tyfun' tyfun))
-     (*                 (* normTyFun *) (apptyfun (normTyApp tyapp) tyfun) 
+     (*                 (* normTyFun *) (apptyfun (normTyApp tyapp) tyfun)
          (* cvr: TODO does the outer norm cause looping? *) *)
-and normTyFun tyfun = 
+and normTyFun tyfun =
   case tyfun of
     LAMtyfun _ => tyfun
   | APPtyfun tyapp => normTyApp tyapp
   | TYPEtyfun _ => tyfun;
 
-(* cvr: normalizing a module type sorts the entries of its term components   
+(* cvr: normalizing a module type sorts the entries of its term components
         so their field positions can be calculated correctly *)
 
-fun normStr S = 
+fun normStr S =
     STRstr (sortEnv (mapEnv normModBind (MEofStr S)),
             sortEnv (FEofStr S),
 	    GEofStr S,
@@ -1030,52 +1030,52 @@ and normRecStr RS =
   case RS of
     NONrec S => NONrec (normStr S)
   | RECrec (RS,RS') => normRecStr RS'
-and normMod M = 
+and normMod M =
   case M of
     STRmod S => STRmod (normRecStr S)
   | M => M
-and normModBind  id {qualid, info = RS} = 
+and normModBind  id {qualid, info = RS} =
     {qualid = qualid,info = normRecStr  RS}
 and normExMod (EXISTSexmod(T,M)) = EXISTSexmod(T,normMod M);
 
 (* cvr: parameterization of T over P *)
-fun parameteriseTyNameSet T P =  
-  let val (T',T2T') = 
+fun parameteriseTyNameSet T P =
+  let val (T',T2T') =
          foldR (fn  tn as {qualid,info = ref {tnKind,tnEqu,tnStamp,tnSort = _,tnLevel,tnConEnv}}:TyName =>
-                fn (T',T2T') => 
+                fn (T',T2T') =>
 	      let val tnKind' = foldR (fn p => fn k' => ARROWkind (kindTyName p,k')) tnKind P
 		  val tnEqu' = foldR (fn p => fn k' => ARROWequ (equTyName p,k')) tnEqu P
-		  val tn' = {qualid = {qual = "", id = #id qualid}, 
+		  val tn' = {qualid = {qual = "", id = #id qualid},
 			     info = ref {tnKind = tnKind',
-					 tnEqu = tnEqu', 
-					 tnSort = PARAMETERts, 
+					 tnEqu = tnEqu',
+					 tnSort = PARAMETERts,
 					 tnStamp = newTyNameStamp(),
 					 tnLevel= currentBindingLevel(),
 					 tnConEnv = ref NONE}}
                   val tyapp = foldL (fn tn => fn tyapp => APPtyapp (tyapp,APPtyfun (NAMEtyapp tn))) (NAMEtyapp tn') P
 	      in (tn'::T',(tn,tyapp)::T2T')
 	      end)
-          ([],[]) T 
-      val _ =  app2 (fn tn => fn tn' => 
+          ([],[]) T
+      val _ =  app2 (fn tn => fn tn' =>
 		     case !(#tnConEnv (!(#info tn))) of
 			 NONE => ()
-		       | SOME conenv => 
-			     let val (P',P2P') = 
+		       | SOME conenv =>
+			     let val (P',P2P') =
 				      copyTyNameSet PARAMETERts [] [] P
-				 val T2P2P'T'= 
-				     map (fn (tn,tyapp)=> 
-					  (tn,copyTyApp P2P' [] tyapp)) 
+				 val T2P2P'T'=
+				     map (fn (tn,tyapp)=>
+					  (tn,copyTyApp P2P' [] tyapp))
                				  T2T'
-				 val conenv' = 
+				 val conenv' =
 				     copyConEnv (P2P'@T2P2P'T') [] conenv
 			     in
-				 (#tnConEnv (!(#info tn'))) := 
+				 (#tnConEnv (!(#info tn'))) :=
 				 SOME (foldR (fn p => fn conenv => LAMconenv(p,conenv))
-				       conenv' 
+				       conenv'
 				       P')
 			     end)
-			 T 
-			 T' 
+			 T
+			 T'
    in
        (T',T2T')
    end
@@ -1083,17 +1083,17 @@ fun parameteriseTyNameSet T P =
 
 
 fun stripTyApp tyfuns tyapp =
-      case tyapp of 
+      case tyapp of
 	  NAMEtyapp tn => (tn,tyfuns)
 	| APPtyapp (tyapp,tyfun) =>stripTyApp (tyfun::tyfuns) tyapp
 
-local 
+local
   fun stripConEnv conenv =
       case conenv of
 	  ConEnv CE => ([],conenv)
 	| LAMconenv (tn,conenv) =>
 	      let val (tns,conenv) = stripConEnv conenv
-	      in  (tn::tns,conenv) 
+	      in  (tn::tns,conenv)
 	      end
 in
 
@@ -1106,20 +1106,20 @@ in
 	   | SOME conenv =>
 		 let val conenv = copyConEnv [] [] conenv
 		     val (tns,conenv) = stripConEnv conenv
-		 in 
-		    app2 (fn tn => fn tyfun => 
+		 in
+		    app2 (fn tn => fn tyfun =>
 			  setTnSort (#info tn) (REAts tyfun))
-		          tns 
+		          tns
 			  tyfuns;
 		    SOME conenv
 		 end
      end
 
 end
-;		
-	     
+;
 
-fun isTupleType tau = 
+
+fun isTupleType tau =
     case normType tau of
 	RECt rt => let val {fields, rho} = !rt
 		    in isNilRowType rho andalso isTupleRow fields end
@@ -1147,10 +1147,10 @@ fun contentsOfRowType rho =
 
 fun extractLab r r' (lab: Lab) (rho: RowType) =
   case !rho of
-      NILrow => 
+      NILrow =>
 	  if isTupleType (RECt r) andalso isTupleType (RECt r') then
 	      raise Unify UnifyTup
-	  else 
+	  else
 	      raise Unify (UnifyRec lab)
     | VARrow rv =>
         let val {rvEqu=equ, rvImp=imp, rvLevel=level, ...} = !rv
@@ -1164,7 +1164,7 @@ fun extractLab r r' (lab: Lab) (rho: RowType) =
     | FIELDrow _ => fatalError "extractLab"
 ;
 
-fun occur_check var fvs =                     
+fun occur_check var fvs =
       (* cvr: TODO it might be more efficient to proceed as above and only caculate free vars for PACKt *)
     app (fn  var' =>
           if var = var' then
@@ -1174,7 +1174,7 @@ fun occur_check var fvs =
 
 exception ScopeViolation of ScopeViolation;
 
-fun prune_level max_level (fns,fvs,frvs) = 
+fun prune_level max_level (fns,fvs,frvs) =
    (app (fn (tn:TyName) =>
           if #tnLevel(!(#info tn)) > max_level then
                raise ScopeViolation (TYNAMEsv tn)
@@ -1193,8 +1193,8 @@ fun prune_level max_level (fns,fvs,frvs) =
 ;
 
 (* refresh the levels of free unification vars in Obj after a decrease in current binding level *)
-local     
-  fun refreshVars freeVarsObj Obj = 
+local
+  fun refreshVars freeVarsObj Obj =
    let val (_,fvs,frvs) = freeVarsObj [] [] ([],[],[]) Obj
        val max_level = !binding_level
    in
@@ -1208,14 +1208,14 @@ local
           setRvLevel rv max_level
         else ()) frvs
    end
-in 
+in
     fun refreshExEnv E = (refreshVars freeVarsExEnv E;E)
 end
 ;
 
 
 fun assumingEqualityTypeVars tvs f a =
-    let val tvRecords = 
+    let val tvRecords =
  	  map (fn tv as (ref tvRecord) => (setTvEqu tv true;tvRecord)) tvs
 	val res = f a
     in
@@ -1226,8 +1226,8 @@ fun assumingEqualityTypeVars tvs f a =
 
 fun typeViolatesEquality tau =
   case normType tau of
-      VARt tv => 
-	  if isExplicit tv 
+      VARt tv =>
+	  if isExplicit tv
 	      then not(#tvEqu(!tv))
 	  else false
     | ARROWt _ => true
@@ -1241,36 +1241,36 @@ fun typeViolatesEquality tau =
         exists_field typeViolatesEquality fields
     | PACKt _ => true
 and EqualityOfTyName tn = equTyName tn
-and EqualityOfTyApp tyapp = 
+and EqualityOfTyApp tyapp =
   case tyapp of
     NAMEtyapp tn => EqualityOfTyName tn
-  | APPtyapp (tyapp,tyfun) => 
-      (case EqualityOfTyApp tyapp of 
+  | APPtyapp (tyapp,tyfun) =>
+      (case EqualityOfTyApp tyapp of
             ARROWequ(equ,equ') => equ'
           | _ => fatalError "EqualityOfTyApp")
-and EqualityOfTyFun tyfun = 
+and EqualityOfTyFun tyfun =
   case normTyFun tyfun of
     APPtyfun tyapp => EqualityOfTyApp tyapp
   | TYPEtyfun(tvs, ty)=>
      (case (tvs,normType ty) of
 	  ([tv],CONt([VARt tv'],NAMEtyapp tn)) =>
-	      if tv = tv' andalso isEqTN tyname_ref tn 
+	      if tv = tv' andalso isEqTN tyname_ref tn
 		  (* tyfun is an eta-expansion of ref *)
 		  then REFequ
-	      else 
+	      else
 		  assumingEqualityTypeVars tvs
-		  (fn ty => 
-		   if typeViolatesEquality ty 
-		       then FALSEequ 
-		   else TRUEequ) 
+		  (fn ty =>
+		   if typeViolatesEquality ty
+		       then FALSEequ
+		   else TRUEequ)
 		  ty
 	| (tvs,ty) => assumingEqualityTypeVars tvs
-		  (fn ty => 
-		   if typeViolatesEquality ty 
-		       then FALSEequ 
-		   else TRUEequ) 
+		  (fn ty =>
+		   if typeViolatesEquality ty
+		       then FALSEequ
+		   else TRUEequ)
 		  ty)
-  | LAMtyfun (tn,tyfun) => 
+  | LAMtyfun (tn,tyfun) =>
 	ARROWequ(EqualityOfTyName tn,EqualityOfTyFun tyfun)
 ;
 
@@ -1296,7 +1296,7 @@ fun makeEquality t = (* cvr: TODO review for tyapp *)
       (case EqualityOfTyApp tyapp of
            FALSEequ => raise Unify UnifyEquality
          | TRUEequ =>
-             (app makeEquality ts 
+             (app makeEquality ts
 	      (* cvr: TODO remove ;makeEqualityTyApp tyapp *)
 	      )
          | REFequ => ()
@@ -1318,14 +1318,14 @@ fun makeImperativeRho rho =
 fun makeImperative (fnvs as (fns,fvs,frvs)) =
     (app (fn var =>
 	  if #tvImp(!var) then ()
-	  else if isExplicit var 
+	  else if isExplicit var
 		   then raise Unify UnifyExplicit
 	       else
 		   setTvImp var true
 		   ) fvs;
      app (fn rowvar =>
           setRvImp rowvar true
-	  ) frvs);  
+	  ) frvs);
 
 fun makeOverloaded t =
   case normType t of
@@ -1377,8 +1377,8 @@ fun makeTyNameParameter kind  =
       info=ref { tnStamp=newTyNameStamp(), tnKind=kind, tnLevel = !binding_level,
                  tnEqu=TRUEequ, tnSort = PARAMETERts, tnConEnv = ref NONE }}
     ;
-    
-val matchExModRef = 
+
+val matchExModRef =
     let fun dummyMatchExMod (_:ExMod) (_:ExMod) : unit = fatalError "dummyMatchExMod"
     in ref dummyMatchExMod
     end;
@@ -1442,12 +1442,12 @@ and unifyTyApp tyapp tyapp' =
     |  (_,_) => raise Unify UnifyOther
 and unifyTyFun tyfun tyfun' =
     case (tyfun,tyfun') of
-       (APPtyfun tyapp, APPtyfun tyapp') => 
+       (APPtyfun tyapp, APPtyfun tyapp') =>
           unifyTyApp tyapp tyapp'
     |  (LAMtyfun (tn,tyfun), LAMtyfun (tn',tyfun')) =>
           let val () = incrBindingLevel ();
               val (tn'',tn2tn'') = copyTyName PARAMETERts [] [] tn;
-          in 
+          in
               unifyTyFun (copyTyFun [tn2tn''] []  tyfun)
                     (copyTyFun [(tn',NAMEtyapp tn'')] [] tyfun');
               decrBindingLevel()
@@ -1455,7 +1455,7 @@ and unifyTyFun tyfun tyfun' =
     | (LAMtyfun (tn,tyfun), APPtyfun tyapp) =>
           let val () = incrBindingLevel ();
               val (tn',tn2tn') = copyTyName PARAMETERts [] [] tn;
-          in 
+          in
               unifyTyFun (copyTyFun [tn2tn'] [] tyfun)
                          (APPtyfun (APPtyapp (tyapp,APPtyfun (NAMEtyapp tn'))));
               decrBindingLevel()
@@ -1465,7 +1465,7 @@ and unifyTyFun tyfun tyfun' =
               val tys  = newTypeParameters vs;
               val UE = zip2 vs tys;
               val UE' = zip2 vs' tys;
-          in 
+          in
               unify (copyType [] UE ty) (copyType [] UE' ty');
               decrBindingLevel()
           end
@@ -1473,7 +1473,7 @@ and unifyTyFun tyfun tyfun' =
           let val () = incrBindingLevel ();
               val tys  = newTypeParameters vs;
               val UE = zip2 vs tys;
-          in 
+          in
               unify (copyType [] UE ty) (CONt(tys,tyapp));
               decrBindingLevel()
           end
@@ -1481,11 +1481,11 @@ and unifyTyFun tyfun tyfun' =
           let val () = incrBindingLevel ();
               val tys  = newTypeParameters vs;
               val UE = zip2 vs tys;
-          in 
+          in
               unify (CONt(tys,tyapp)) (copyType [] UE ty);
               decrBindingLevel()
           end
-    | (_,_) => fatalError "unifyTyFun" 
+    | (_,_) => fatalError "unifyTyFun"
 (*
 and linkVarToType var tau =
 (
@@ -1547,7 +1547,7 @@ and unifyRec (r : RecType) (r' : RecType) =
 
 val equalsTyFunTyName = fn tyfun => fn tn =>
     if kindTyName tn = kindTyFun tyfun
-	then 
+	then
 	    (unifyTyFun (normTyFun tyfun) (APPtyfun(NAMEtyapp tn));
 	     true)
 	    handle Unify _ => false
@@ -1557,8 +1557,8 @@ val equalsTyFunTyName = fn tyfun => fn tn =>
 
 fun generalization isExpansive tau =
   let val (_,fvs,_)= freeVarsType [] [] ([],[],[]) tau
-      val parameters = 
-	  foldL (fn var => fn parameters => 
+      val parameters =
+	  foldL (fn var => fn parameters =>
 		 let val {tvImp, tvOvl, tvLevel, tvKind, ...} = !var in
 		     if member var parameters then parameters
 		     else if tvLevel <= !binding_level then
@@ -1568,30 +1568,30 @@ fun generalization isExpansive tau =
 			  parameters)
 		     else if tvImp andalso isExpansive then
 			 (setTvLevel var (!binding_level);
-			  (case tvKind of 
+			  (case tvKind of
  			     Explicit _ => setTvKind var NoLink
 			                   (* cvr: TODO review
 					      although this deviates from the Definition,
-					      we choose to replace non-generalizable 
+					      we choose to replace non-generalizable
 					      (and hence meaningless)
-					      explicit type variables by fresh 
-					      unification variables *)		 
+					      explicit type variables by fresh
+					      unification variables *)
                            | _ => ());
 			  parameters)
-		     else var :: parameters 
+		     else var :: parameters
 		 end)
 	  []
 	  fvs
- 
+
   in
     TypeScheme {tscParameters = parameters, tscBody = tau}
   end;
 
 (* cvr: TODO simplify by call to freeVars?*)
-fun checkClosedType parameters tau = 
+fun checkClosedType parameters tau =
           case normType tau of
                 VARt var =>
-                  if member var (parameters) 
+                  if member var (parameters)
                   then ()
                   else raise Subscript
               | ARROWt(t,t') =>
@@ -1601,44 +1601,44 @@ fun checkClosedType parameters tau =
               | RECt (ref{fields, ...}) =>
                   app_field (checkClosedType parameters) fields
               | PACKt X => checkClosedExMod parameters X
-and checkClosedTypeScheme parameters (TypeScheme {tscParameters,tscBody})  = 
+and checkClosedTypeScheme parameters (TypeScheme {tscParameters,tscBody})  =
     checkClosedType (tscParameters@parameters) tscBody
 and checkClosedTyApp parameters tyapp =
     case (* normTyApp *) tyapp of
-       NAMEtyapp _ => ()              
+       NAMEtyapp _ => ()
     |  APPtyapp (tyapp,tyfun) => (checkClosedTyApp parameters tyapp; checkClosedTyFun parameters tyfun)
 and checkClosedTyFun parameters tyfun =
-    case normTyFun tyfun of 
+    case normTyFun tyfun of
        TYPEtyfun (vs,ty) => checkClosedType (vs@parameters) ty
     |  LAMtyfun (v,tyfun) => checkClosedTyFun parameters tyfun
     |  APPtyfun tyapp => checkClosedTyApp parameters tyapp
-and checkClosedVarEnv parameters VE = 
+and checkClosedVarEnv parameters VE =
        traverseEnv (fn id => fn {qualid, info = (sc,_)} => checkClosedTypeScheme parameters sc) VE
-and checkClosedTyEnv parameters VE = 
+and checkClosedTyEnv parameters VE =
        traverseEnv (fn id => fn (tyfun,_) => checkClosedTyFun parameters tyfun) VE
-and checkClosedStr parameters str = 
-    case str of 
+and checkClosedStr parameters str =
+    case str of
        STRstr (ME,FE,GE,TE,VE) =>
         (checkClosedModEnv parameters ME;
 	 checkClosedFunEnv parameters FE;
 	 checkClosedSigEnv parameters GE;
          checkClosedTyEnv parameters TE;
          checkClosedVarEnv parameters VE)
-    |  SEQstr (str,str') => 
+    |  SEQstr (str,str') =>
         (checkClosedStr parameters str;checkClosedStr parameters str')
-and checkClosedRecStr parameters RS = 
+and checkClosedRecStr parameters RS =
     case RS of
       RECrec (RS,RS') =>
         (checkClosedRecStr parameters RS;checkClosedRecStr parameters RS')
     | NONrec S => (checkClosedStr parameters S)
-and checkClosedMod parameters M = 
+and checkClosedMod parameters M =
     case M of
       STRmod RS => checkClosedRecStr parameters RS
     | FUNmod (T,M,X) => (checkClosedMod parameters M;checkClosedExMod parameters X)
-and checkClosedModEnv parameters ME = 
+and checkClosedModEnv parameters ME =
        traverseEnv (fn id => fn {qualid, info = RS} => checkClosedRecStr parameters RS) ME
 and checkClosedGenFun parameters (T,M,X) = (checkClosedMod parameters M; checkClosedExMod parameters X)
-and checkClosedFunEnv parameters FE = 
+and checkClosedFunEnv parameters FE =
        traverseEnv (fn id => fn {qualid, info = F} => checkClosedGenFun parameters F) FE
 and checkClosedExMod parameters (EXISTSexmod(T,M)) = (checkClosedMod parameters M)
 and checkClosedSig parameters (LAMBDAsig(T,M)) = (checkClosedMod parameters M)
@@ -1660,25 +1660,25 @@ local fun errorToplevelImperativeVar desc id =
   raise Toplevel
 )
 in
-fun checkClosedCSig (csig:CSig) = 
-      ( Hasht.apply (fn id => fn {qualid, info = (sc,_)} => 
-		     (checkClosedTypeScheme [] sc) 
+fun checkClosedCSig (csig:CSig) =
+      ( Hasht.apply (fn id => fn {qualid, info = (sc,_)} =>
+		     (checkClosedTypeScheme [] sc)
 		     handle Subscript => errorToplevelImperativeVar "value" id)
        (varEnvOfSig csig);
-       Hasht.apply (fn id => fn (tyfun,_) => 
-                    (checkClosedTyFun [] tyfun) 
+       Hasht.apply (fn id => fn (tyfun,_) =>
+                    (checkClosedTyFun [] tyfun)
                     handle Subscript => errorToplevelImperativeVar "type" id)
        (tyEnvOfSig csig);
-       Hasht.apply (fn id => fn {qualid, info = RS} => 
-                    (checkClosedRecStr [] RS) 
+       Hasht.apply (fn id => fn {qualid, info = RS} =>
+                    (checkClosedRecStr [] RS)
                     handle Subscript => errorToplevelImperativeVar "structure" id)
        (modEnvOfSig csig);
-       Hasht.apply (fn id => fn {qualid, info = F} => 
-                    (checkClosedGenFun [] F) 
+       Hasht.apply (fn id => fn {qualid, info = F} =>
+                    (checkClosedGenFun [] F)
                     handle Subscript => errorToplevelImperativeVar "functor" id)
        (funEnvOfSig csig);
-       Hasht.apply (fn id => fn {qualid, info = G} => 
-                    (checkClosedSig [] G) 
+       Hasht.apply (fn id => fn {qualid, info = G} =>
+                    (checkClosedSig [] G)
                     handle Subscript => errorToplevelImperativeVar "signature" id)
        (sigEnvOfSig csig))
 end;
@@ -1758,7 +1758,7 @@ fun specialization scheme =
     case tscParameters of
       [] => tscBody
     | _ =>
-        let 
+        let
 	    val UE =
               map (fn var => (var, VARt(refreshTypeVar var))) tscParameters;
         in copyType [] UE tscBody end
@@ -1768,7 +1768,7 @@ fun TypeOfScheme (TypeScheme {tscBody, ...}) = tscBody;
 
 fun freshSchemeOfType tau =
   let
-    val (_,parameters,_) = freeVarsType [] [] ([],[],[]) tau 
+    val (_,parameters,_) = freeVarsType [] [] ([],[],[]) tau
     val vs = map (fn _ => newTypeParameter false false false) parameters
     val UE = Fnlib.map2 (fn var => fn var' => (var, VARt var'))
                         parameters vs
@@ -1911,37 +1911,37 @@ val () = (#tnConEnv (!(#info tyname_order))) := SOME (initial_order_CE);
 val () = (#tnConEnv (!(#info tyname_frag))) := SOME (initial_frag_CE);
 
 local fun lookupStr envOfStr (STRstr S) id = lookupEnv (envOfStr S) id
-	| lookupStr envOfStr (SEQstr (S,S')) id = 
+	| lookupStr envOfStr (SEQstr (S,S')) id =
              (lookupStr envOfStr S' id)
 	     handle Subscript => lookupStr envOfStr S id
-in      
+in
 fun lookupStr_ModEnv S path id info =
-   (lookupStr #1 S id)    
-   handle Subscript => 
+   (lookupStr #1 S id)
+   handle Subscript =>
        raise MatchError (MissingStructure (path, id, info))
 fun lookupStr_FunEnv S path id info =
-   (lookupStr #2 S id)    
-   handle Subscript => 
+   (lookupStr #2 S id)
+   handle Subscript =>
        raise MatchError (MissingFunctor (path, id, info))
 fun lookupStr_SigEnv S path id info =
-   (lookupStr #3 S id)    
-   handle Subscript => 
+   (lookupStr #3 S id)
+   handle Subscript =>
        raise MatchError (MissingSignature (path, id, info))
 fun lookupStr_TyEnv S path id info =
    (lookupStr #4 S id)
-   handle Subscript => 
+   handle Subscript =>
        raise MatchError (MissingType (path, id, info))
 fun lookupStr_VarEnv S path id info =
-   (lookupStr #5 S id)    
-   handle Subscript => 
+   (lookupStr #5 S id)
+   handle Subscript =>
        raise MatchError (MissingValue (path, id, info))
 end;
 
 
 (* cvr: since substitution now expands realisations automatically by normalisation we can simplify expandRea to:  *)
 
-fun expandRea UE tau = 
-  type_subst UE tau; 
+fun expandRea UE tau =
+  type_subst UE tau;
 
 fun newParTypeVar () =
   mkTypeVar false false false 0
@@ -1965,7 +1965,7 @@ fun isTypeFcnEqu vs' tau' vs tau =
   end
 ;
 
-fun matchDatatype path (id : string) (infTyStr as (_,ConEnv infCE : ConEnv)) 
+fun matchDatatype path (id : string) (infTyStr as (_,ConEnv infCE : ConEnv))
                                      (specTyStr as (_,ConEnv specCE : ConEnv)) =
     (*cvr: changed ^^^^^^^^^^^^, ^^^^^^           and  ^^^^^^ *)
     let val domCE  = map (fn gci => hd(#id(#qualid gci))) ( infCE)
@@ -1974,7 +1974,7 @@ fun matchDatatype path (id : string) (infTyStr as (_,ConEnv infCE : ConEnv))
 	(* domCE' is non-empty, because `abstype' is not allowed *)
 	(* in signatures, and "primitive" types are represented  *)
 	(* as NILts. *)
-	if domCE <> domCE' 
+	if domCE <> domCE'
 	    then raise MatchError (ConEnvMismatch (path, id, infTyStr, specTyStr))
 	else ()
         (* We don't have to compare the types of constructors here, *)
@@ -2000,27 +2000,27 @@ fun refreshFlexibleTypeVar (var : TypeVar) = (* cvr: TODO is it ok to ignore ove
   end;
 
 (* cvr: refreshing type names to change their status *)
-fun refreshTyName tnSort ({qualid,info}:TyName) = 
-  let val { tnStamp=stamp, 
-	    tnKind=kind, 
-	    tnEqu=equ, 
-	    tnSort=sort, 
+fun refreshTyName tnSort ({qualid,info}:TyName) =
+  let val { tnStamp=stamp,
+	    tnKind=kind,
+	    tnEqu=equ,
+	    tnSort=sort,
 	    tnLevel=_,
             tnConEnv=tnConEnv} = !info in
-      info := {tnStamp=stamp, 
+      info := {tnStamp=stamp,
 	       tnKind=kind, (* change the status *)
-	       tnEqu=equ, 
-	       tnSort=tnSort, 
+	       tnEqu=equ,
+	       tnSort=tnSort,
 	       tnLevel= !binding_level, (* update the level *)
 	       tnConEnv = tnConEnv}
-  end;    
+  end;
 
-fun refreshTyNameSet tnSort (T:TyNameSet) = 
+fun refreshTyNameSet tnSort (T:TyNameSet) =
     app (refreshTyName tnSort) T;
 
 (* cvr: matching type schemes *)
 
-fun matchTypeSchemes path id (infInfo as {info = (infSc,_),qualid = _}) 
+fun matchTypeSchemes path id (infInfo as {info = (infSc,_),qualid = _})
                              (specInfo as {info = (specSc,_),qualid = _}) =
   let
     val TypeScheme{tscParameters=vs, tscBody=tau} = specSc
@@ -2059,44 +2059,44 @@ fun realizeTyStr path id (infTyStr : TyFun * ConEnv) (specTyStr : TyFun * ConEnv
     (infTyFun, specTyFun) =>
  ((case (kindTyFun infTyFun, kindTyFun specTyFun) of
       (ARITYkind infArity, ARITYkind specArity) =>
-      if specArity  <> infArity then 
+      if specArity  <> infArity then
 	   raise MatchError (ArityMismatch (path,id,infTyStr,specTyStr,infArity,specArity))
       else ()
     | (_,_) => fatalError "realizeTyStr:1");
   ((case patternOfTyFun specTyFun of
 	   (tn,tns) =>
-	       let val _ = 
-                     (* cvr: its important that we match equality *only* 
+	       let val _ =
+                     (* cvr: its important that we match equality *only*
     		             when specTyFun is a pattern (ie. opaque), since
 			     specTyFun may otherwise contain unification variables
 			     whose equality status is determined only *after*
 			     unification. *)
-		     (case EqualityOfTyFun specTyFun of 
+		     (case EqualityOfTyFun specTyFun of
 			REFequ =>
-			    if (EqualityOfTyFun infTyFun) <> REFequ then 
+			    if (EqualityOfTyFun infTyFun) <> REFequ then
 				raise MatchError (RefEqualityMismatch (path,id,infTyStr,specTyStr))
 			    else ()
 		      | TRUEequ =>
-			    if (EqualityOfTyFun infTyFun) = FALSEequ then 
+			    if (EqualityOfTyFun infTyFun) = FALSEequ then
 				raise MatchError (EqualityMismatch (path,id,infTyStr,specTyStr))
 			    else ()
 		      | FALSEequ =>
 				()
-		      | _ => fatalError "realizeTyStr:2") 
+		      | _ => fatalError "realizeTyStr:2")
 		   val tnLevel = #tnLevel(!(#info tn))
-		   val (fns,fvs,frvs) = freeVarsTyFun tns [] ([],[],[]) infTyFun 
+		   val (fns,fvs,frvs) = freeVarsTyFun tns [] ([],[],[]) infTyFun
 		   val _ = (* occur check, required for recursive modules *)
-		       app (fn tn' => 
-			    if tn = tn' 
+		       app (fn tn' =>
+			    if tn = tn'
 			    then raise MatchError (CircularMismatch(path,
 								    id,
 								    infTyStr,
 								    specTyStr,
 								    tn'))
-			    else ()) 
+			    else ())
 		            fns
                    val _ = (prune_level (tnLevel) (fns,fvs,frvs))
-                           handle ScopeViolation sv => 
+                           handle ScopeViolation sv =>
 			       raise MatchError (PatternMismatch (path,
 								 id,
 								 infTyStr,
@@ -2113,33 +2113,33 @@ fun checkRealization (* (inferredSig : CSig) (specSig : CSig)*)
                 path id (infTyStr : TyFun * ConEnv) (specTyStr : TyFun * ConEnv) =
     case (normTyFun (#1 specTyStr),(#2 specTyStr)) of
       (specTyFun, ConEnv []) =>
-          let  val infTyFun = normTyFun (#1 infTyStr) 
+          let  val infTyFun = normTyFun (#1 infTyStr)
           in
 	      unifyTyFun infTyFun specTyFun (* cvr: CHECK THIS *)
 	      handle Unify _ => (* cvr: TODO improve error message *)
 		  raise MatchError (TransparentMismatch (path,id,infTyStr,specTyStr))
 	  end
-    | (specTyFun, specCE) => 
+    | (specTyFun, specCE) =>
          case (normTyFun (#1 infTyStr),(#2 infTyStr)) of
-             (infTyfun, ConEnv []) =>                           
+             (infTyfun, ConEnv []) =>
 		 raise MatchError (DatatypeMismatch (path,id,infTyStr,specTyStr))
-         |   (infTyfun, infCE) =>            
+         |   (infTyfun, infCE) =>
 		 matchDatatype path id infTyStr specTyStr
 
 ;
 
-fun matchIdStatus (* os *) path id 
+fun matchIdStatus (* os *) path id
     (infInfo as {info = (_,infStatus),qualid = infQualid})
     (specInfo as {info = (_,specStatus),qualid = specQualid}) =
   let
       val {qual=infQual, ...} = infQualid
-      val {qual=specQual,...} = specQualid 
+      val {qual=specQual,...} = specQualid
   in
     case specStatus of
         VARname ovltype =>
           (case infStatus of
                VARname ovltype' =>
-                 (if ovltype <> ovltype' then 
+                 (if ovltype <> ovltype' then
 		      raise MatchError (StatusMismatch (path,id,infInfo,specInfo))
                   else ())
              | REFname => raise MatchError (StatusMismatch (path,id,infInfo,specInfo))
@@ -2147,11 +2147,11 @@ fun matchIdStatus (* os *) path id
       | PRIMname pi =>
           (case infStatus of
                PRIMname pi'=>
-                 if pi <> pi' 
-                 then 
+                 if pi <> pi'
+                 then
 		   raise MatchError (StatusMismatch (path,id,infInfo,specInfo))
 		 else ()
-             | _  => 
+             | _  =>
 		     raise MatchError (StatusMismatch (path,id,infInfo,specInfo)))
       | CONname ci =>
           (case infStatus of
@@ -2175,15 +2175,15 @@ fun matchIdStatus (* os *) path id
 	       REFname => ()
 	     | _ => raise MatchError (StatusMismatch (path,id,infInfo,specInfo)))
   end
-and matchStr path S S' = 
+and matchStr path S S' =
     case S' of
-      STRstr (ME,FE,GE,TE,VE) => 
+      STRstr (ME,FE,GE,TE,VE) =>
 	  (traverseEnv (fn id => fn specInfo =>
-			realizeTyStr path id 
+			realizeTyStr path id
 			  (lookupStr_TyEnv S path id specInfo) specInfo)
 	   TE;
 	   traverseEnv (fn id => fn specInfo =>
-			checkRealization path id 
+			checkRealization path id
 			(lookupStr_TyEnv S path id specInfo) specInfo)
 	   TE;
 	   traverseEnv (fn id => fn specInfo =>
@@ -2191,32 +2191,32 @@ and matchStr path S S' =
 			in
 			    (matchTypeSchemes path id infInfo specInfo;
 			     matchIdStatus path id infInfo specInfo)
-			end) 
+			end)
 	   VE;
 	   traverseEnv (fn id => fn specInfo =>
-			matchModBind path id 
+			matchModBind path id
 			(lookupStr_ModEnv S path id specInfo) specInfo)
 	   ME;
 	   traverseEnv (fn id => fn specInfo =>
-			matchFunBind path id 
+			matchFunBind path id
 			(lookupStr_FunEnv S path id specInfo) specInfo)
 	   FE;
 	   traverseEnv (fn id => fn specInfo =>
-			matchSigBind path id 
+			matchSigBind path id
 			(lookupStr_SigEnv S path id specInfo) specInfo)
 	   GE)
   |  SEQstr (S1',S2') => (matchStr path S S1'; matchStr path S S2')
-and matchRecStr path RS (RECrec (RS1',RS2')) = 
+and matchRecStr path RS (RECrec (RS1',RS2')) =
     (matchRecStr path RS RS1'; matchRecStr path RS RS2')
-|   matchRecStr path (NONrec S) (NONrec S') = 
+|   matchRecStr path (NONrec S) (NONrec S') =
     (matchStr path S S')
-|   matchRecStr path (RECrec(RS1,RS2)) RS' = 
+|   matchRecStr path (RECrec(RS1,RS2)) RS' =
     (matchRecStr path RS2 RS')
-and matchFun path (T,M,X) (T',M',X') = 
+and matchFun path (T,M,X) (T',M',X') =
    (incrBindingLevel();
     refreshTyNameSet PARAMETERts T';
     refreshTyNameSet VARIABLEts T;
-    matchMod (DOMpath(path)) M' M; 
+    matchMod (DOMpath(path)) M' M;
     matchExMod (RNGpath(path)) X X';
     decrBindingLevel())
 and matchModBind path id {qualid = _,info = RS} {qualid = _,info = RS'} =
@@ -2225,18 +2225,18 @@ and matchFunBind path id {qualid = _,info = F} {qualid = _,info = F'} =
     matchFun  (DOTpath(path,id)) F F'
 and matchSigBind path id (infInfo as {qualid = _,info = G}) (specInfo as  {qualid = _,info = G'}) =
     ((matchSig  (NILpath) G G')
-     handle MatchError reason => 
+     handle MatchError reason =>
 	 raise MatchError (SignatureMismatch(path,id,infInfo,specInfo,SOME reason,NONE));
      (matchSig  (NILpath) G' G)
-     handle MatchError reason => 
+     handle MatchError reason =>
 	 raise MatchError (SignatureMismatch(path,id,infInfo,specInfo,NONE,SOME reason)))
 and matchMod path M M' =
   case (M,M') of
      (STRmod RS,STRmod RS') => matchRecStr path RS RS'
   |  (FUNmod F, FUNmod F') => matchFun path F F'
-  |  (_,STRmod _) => 
+  |  (_,STRmod _) =>
 	 raise MatchError (ModuleMismatch(path,"functor","structure"))
-  |  (_,FUNmod _) => 
+  |  (_,FUNmod _) =>
 	 raise MatchError (ModuleMismatch(path,"structure","functor"))
 
 and matchExMod path (EXISTSexmod(T,M)) (EXISTSexmod(T',M')) =
@@ -2254,29 +2254,29 @@ and matchSig path (LAMBDAsig(T,M)) (LAMBDAsig(T',M')) =
     refreshTyNameSet PARAMETERts T'; (* forget the realisation *)
     decrBindingLevel());
 
-fun matchInfixStatus path id infFixity specFixity = 
+fun matchInfixStatus path id infFixity specFixity =
     if specFixity = infFixity then ()
     else raise MatchError(InfixStatusMismatch(path,id,infFixity,specFixity))
 ;
 
 fun matchInfixBasis path infIBas specIBas =
-   (Hasht.apply 
+   (Hasht.apply
     (fn id => fn specFixity =>
-        matchInfixStatus path id 
-	                  ((Hasht.find infIBas id) 
-			   handle Subscript => 
+        matchInfixStatus path id
+	                  ((Hasht.find infIBas id)
+			   handle Subscript =>
 			       raise MatchError (MissingInfixStatus (path,id,specFixity)))
 			  specFixity)
     specIBas)
 ;
 
 fun matchCSig (inferredSig:CSig) (specSig:CSig) =
-  case !(strOptOfSig specSig) of 
+  case !(strOptOfSig specSig) of
     NONE => fatalError "matchSignature"
-  | SOME RS => 
+  | SOME RS =>
      (* NB: the infix bases and sigenv's will be empty in STRmode *)
-     let val (T,RS) = 
-	   case copySig [] [] (LAMBDAsig(!(tyNameSetOfSig specSig),STRmod RS)) of 
+     let val (T,RS) =
+	   case copySig [] [] (LAMBDAsig(!(tyNameSetOfSig specSig),STRmod RS)) of
 	       LAMBDAsig(T,STRmod RS) => (T,RS)
 	     | _  => fatalError "matchCSig"
 	 val RS' = NONrec (STRstr (mk1TopEnv (#uModEnv inferredSig),
@@ -2284,7 +2284,7 @@ fun matchCSig (inferredSig:CSig) (specSig:CSig) =
 				   mk1TopEnv (#uSigEnv inferredSig),
 				   mk1TopEnv (#uTyEnv  inferredSig),
 				   mk1TopEnv (#uVarEnv inferredSig)))
-	     
+
      in
 	 refreshTyNameSet VARIABLEts T;
 	 matchRecStr UNITpath RS' RS;
@@ -2294,19 +2294,19 @@ fun matchCSig (inferredSig:CSig) (specSig:CSig) =
 
 (* define the exported variants *)
 
-local 
+local
     fun pathOfLongStrId [id] = IDpath id
     | pathOfLongStrId (id::ids) = DOTpath(pathOfLongStrId ids,id)
     | pathOfLongStrId [] = NILpath
 in
-fun realizeLongTyCon (qualid as {qual,id = tycon::longstrid}) infTyStr specTyStr = 
+fun realizeLongTyCon (qualid as {qual,id = tycon::longstrid}) infTyStr specTyStr =
     let val path = pathOfLongStrId longstrid
     in  realizeTyStr path tycon infTyStr specTyStr
     end
   | realizeLongTyCon _ _ _ = fatalError "realizeLongTyCon"
 end;
-   
-   
+
+
 val matchMod = matchMod NILpath;
 val matchSig = matchSig NILpath;
 
@@ -2323,12 +2323,12 @@ val free_variable_names = ref ([] : (TypeVar * string) list);
 val free_variable_counter = ref 0;
 
 
-fun under_binder f a = 
+fun under_binder f a =
     (let val temp_freetyname_names = !free_tyname_names
          val temp_freetyname_counter = !free_tyname_counter
 	 val temp_free_variable_names = !free_variable_names
 	 val temp_free_variable_counter = !free_variable_counter
-         val r = f a 
+         val r = f a
      in  free_tyname_names := temp_freetyname_names;
 	 free_tyname_counter := temp_freetyname_counter;
 	 free_variable_names := temp_free_variable_names;
@@ -2356,13 +2356,13 @@ fun choose_arbitrary_tyname () =
 
 (*
 fun choose_derived_tyname name =
-	if exists (fn (_,name') => name' = name) (!free_tyname_names)  
-	    then choose_derived_tyname (name ^ "'") 
+	if exists (fn (_,name') => name' = name) (!free_tyname_names)
+	    then choose_derived_tyname (name ^ "'")
 	else name;
 *)
 
 fun choose_derived_tyname name =
-	   let val (_,(_,lastsuffix)) = 
+	   let val (_,(_,lastsuffix)) =
 	       choose (fn (_,(name',_)) => name' = name) (!free_tyname_names)
 	   in
 	       (name,lastsuffix + 1)
@@ -2383,22 +2383,22 @@ fun choose_arbitrary_variable () =
 	    choose_arbitrary_variable (alphaOfInt( !free_variable_counter))
 	end;
 
-local 
+local
     fun choose_derived_variable name =
-	if exists (fn (_,name') => name' = name) (!free_variable_names)  
-	    then choose_derived_variable (name ^ "'") 
+	if exists (fn (_,name') => name' = name) (!free_variable_names)
+	    then choose_derived_variable (name ^ "'")
 	else name;
 in
-    val choose_derived_variable = 
+    val choose_derived_variable =
 	fn "" => choose_arbitrary_variable ()
-	| name => choose_derived_variable (implode (case explode name of 
-							#"'" :: #"_" :: rest => 
+	| name => choose_derived_variable (implode (case explode name of
+							#"'" :: #"_" :: rest =>
 							rest
-						      | #"'" :: #"'" :: #"_" :: rest => 
+						      | #"'" :: #"'" :: #"_" :: rest =>
 							rest
-						      | #"'" :: #"'"  :: rest => 
+						      | #"'" :: #"'"  :: rest =>
 							rest
-						      | #"'"  :: rest => 
+						      | #"'"  :: rest =>
 							rest
 						      | rest => rest))
 end
@@ -2406,12 +2406,12 @@ end
 
 (* reset the current printer state *)
 fun resetPrinter () =
-( free_tyname_names := []; 
+( free_tyname_names := [];
   free_tyname_counter := 0;
   free_variable_names := [];
   free_variable_counter := 0;
   app (fn tn as {qualid,...} =>
-       if isGlobalName qualid andalso 
+       if isGlobalName qualid andalso
 	  not (member (#qual qualid) (!preopenedPreloadedUnits)) andalso
 	  not (member (#qual qualid) (pervasiveOpenedUnits))
 	   then free_tyname_names := (tn,(showQualId qualid,0)) :: !free_tyname_names  (* cvr: TODO revise *)
@@ -2447,19 +2447,19 @@ fun protectCurrentPrinter fct =
 		      free_variable_names := saved_free_variable_names;
 		      free_variable_counter := saved_free_variable_counter;
 		      raise x)
-    end 
+    end
 ;
 
 
 (* cvr: TODO  rationalise *)
 fun collectExplicitVarsInObj freeVarsObj obj =
-  let val (fns,fvs,_) = 
-      freeVarsObj (map #1 (!free_tyname_names)) 
+  let val (fns,fvs,_) =
+      freeVarsObj (map #1 (!free_tyname_names))
                    (map #1 (!free_variable_names))
                    ([],[],[])
 		   obj
   in revApp (fn var =>
-	  let val newname = 
+	  let val newname =
 	      case #tvKind(!var) of
 		  Explicit name => choose_derived_variable name
 		| _ => choose_arbitrary_variable ()
@@ -2484,13 +2484,13 @@ fun collectExplicitVarsInObj freeVarsObj obj =
 fun collectExplicitVars tau = collectExplicitVarsInObj freeVarsType tau;
 
 fun collectTopVars ExEnv =
-  let val (fns,fvs,_) = 
-      freeVarsExEnv (map #1 (!free_tyname_names)) 
+  let val (fns,fvs,_) =
+      freeVarsExEnv (map #1 (!free_tyname_names))
                     (map #1 (!free_variable_names))
 		    ([],[],[])
 		    ExEnv
   in revApp (fn var =>
-	  let val newname = 
+	  let val newname =
 	      case #tvKind(!var) of
 		  Explicit name => choose_derived_variable name
 		| _ => choose_arbitrary_variable ()
@@ -2508,8 +2508,8 @@ fun prTypeVar var =
      val name = lookup var (!free_variable_names)
 	 handle Subscript =>
 	     let val newname =
-		 (case tvKind of 
-		      Explicit name => 
+		 (case tvKind of
+		      Explicit name =>
 			  choose_derived_variable name
 		    |  _ => choose_arbitrary_variable ())
 	     in
@@ -2526,14 +2526,14 @@ fun prTypeVar var =
 
 local fun prNameSuffix (name,0) = msgString name
       |   prNameSuffix (name,suffix) = (msgString name;msgString "/";msgInt suffix)
-      fun prEqu equ =    
+      fun prEqu equ =
 	  case equ of
 	      FALSEequ => msgString ""
 	    | TRUEequ => msgString "="
 	    | REFequ => msgString "="
 	    | ARROWequ(_,equ) => prEqu equ
 in
-fun prTyName showTnEqu tn = 
+fun prTyName showTnEqu tn =
     (let val namesuffix = find (isEqTN tn) (!free_tyname_names)
             (* we use find instead of lookup because tynames in different
                units may be equivalent according to isEqTn without being
@@ -2549,7 +2549,7 @@ fun prTyName showTnEqu tn =
 	      | _ => choose_arbitrary_tyname ()
 	in
 	   free_tyname_names := (tn, namesuffix) :: !free_tyname_names;
-	   if showTnEqu 
+	   if showTnEqu
 	       then prEqu (EqualityOfTyName tn)
            else ();
 	   prNameSuffix namesuffix
@@ -2561,16 +2561,16 @@ fun arrowsToList tau =
     case normType tau of
 	ARROWt(t, t') => t :: arrowsToList t'
       | t => [t]
-;	    
+;
 
 fun prEnv prInfo env initial =
-    foldEnv (fn k => fn v => fn initial => 
-		(if initial 
+    foldEnv (fn k => fn v => fn initial =>
+		(if initial
 		    then ()
 		else (msgString ",";
 		      msgBreak(1, 0));
                 msgIBlock 0;
-                prInfo k v;	       
+                prInfo k v;
                 msgEBlock();
 		false)) initial env;
 
@@ -2597,15 +2597,24 @@ fun prType prior tau =
                 msgString ") "; msgEBlock());
 	 prTyName false tn)
     | CONt(ts, tyapp) => (* cvr: TODO revise *)
-        (case ts of
+        (
+         msgIBlock 0;
+         msgString "CONt=>";
+         msgEOL();
+         case ts of
              []  => ()
            | [t] => (prType 2 t; msgString " ")
            | _ =>
                (msgIBlock 0; msgString "(";
                 prTypeSeq 0 "," 1 ts;
                 msgString ") "; msgEBlock());
-	 prTyApp 1 tyapp)
+	 prTyApp 1 tyapp;
+         msgEOL();
+         msgString "<=CONt";
+         msgEBlock()
+         )
     | RECt rt =>
+        ( msgString "RECt=>";
         let val {fields=fs, rho=rho} = !rt in
           if isNilRowType rho then
             (if null fs then
@@ -2625,7 +2634,10 @@ fun prType prior tau =
              prTypeRow fs; msgString ","; msgBreak(1, 0);
              msgString "...}"; msgEBlock())
         end
-    | PACKt X => 
+        ;
+        msgString "<=RECt"
+        )
+    | PACKt X =>
             (msgString "["; msgIBlock 0;
              prExMod 0 X;
              msgString "]"; msgEBlock())
@@ -2664,7 +2676,7 @@ and prTypeRow fs =
         (msgIBlock 0; printLab lab; msgString " :"; msgBreak(1, 2);
          prType 0 t;
          msgString ","; msgEBlock(); msgBreak(1, 0); prTypeRow rest)
-and prTypeScheme sch = under_binder 
+and prTypeScheme sch = under_binder
     (fn (TypeScheme {tscParameters,tscBody})  =>
      (case tscParameters of
 	  [] => ()
@@ -2672,14 +2684,14 @@ and prTypeScheme sch = under_binder
 		prTypeVarSeq tscParameters "";
 		msgString ".");
         prType 0 tscBody)) sch
-and prTyApp prior tyapp  = 
+and prTyApp prior tyapp  =
   let
     fun prParen prior' s = if prior >= prior' then msgString s else ()
   in
     case stripTyApp [] tyapp of
-       (tyname,[]) => 
+       (tyname,[]) =>
 	   prTyName false tyname
-    |  (tyname,tyfuns) => 
+    |  (tyname,tyfuns) =>
         ( prParen 1 "(";  (* cvr: TODO revise *)
 	  msgIBlock 0;
           prTyName false tyname;
@@ -2694,29 +2706,29 @@ and prTyFun prior tyfun =
   let
       fun prParen prior' s = if prior >= prior' then msgString s else ()
   in
-    case normTyFun tyfun of 
+    case normTyFun tyfun of
        TYPEtyfun ([],ty) =>
          prType prior ty
     |  TYPEtyfun vsty =>
         (prParen 1 "(";
-         under_binder 
+         under_binder
 	   (fn (vs,ty) =>
 	    ((case vs of
 		 []  => ()
 	       | _ =>
-		     (msgIBlock 0; 
-		      msgString "/\\";
+		     (msgIBlock 0;
+		      msgString "/\\ ";
 		      prTypeVarSeq  vs ",";
 		      msgString ".";
 		      msgEBlock()));
 	     prType prior ty))
 	    vsty;
 	  prParen 1 ")")
-    |  LAMtyfun (tn,tyfun) => 
+    |  LAMtyfun (tn,tyfun) =>
          (prParen 1 "(";
-	  prBoundTyNameSet "/\\" 2 [tn] (fn () => prTyFun 0 tyfun);
+	  prBoundTyNameSet "/\\ " 2 [tn] (fn () => prTyFun 0 tyfun);
 	  prParen 1 ")")
-    |  APPtyfun tyapp => 
+    |  APPtyfun tyapp =>
        prTyApp prior tyapp
   end
 and prInfixStatus id status =
@@ -2732,7 +2744,7 @@ and prInfixStatus id status =
           msgInt i; msgString " "));
   msgString id
 )
-and prVarInfo prVal id info = 
+and prVarInfo prVal id info =
     under_binder (fn {qualid,info = (TypeScheme {tscParameters,tscBody},status)} =>
 		 (msgString
 		  (case status of
@@ -2754,7 +2766,7 @@ and prVarInfo prVal id info =
 		  msgString " :";
 		  msgBreak(1, 2);
 		  (case status of  (* cvr: REVISE *)
-		       VARname ovltype => 
+		       VARname ovltype =>
 			   (case ovltype of
 			     REGULARo => prType 0 tscBody
 			   | OVL1NNo => msgString "num -> num "
@@ -2769,23 +2781,23 @@ and prVarInfo prVal id info =
 			       then prType 0 tscBody
 			   else case tscBody of
 				  ARROWt(t,t') =>
-				    (case normType t of   
+				    (case normType t of
 					 RECt (ref {fields=(_::_),...}) =>
 					     (msgString "("; msgIBlock 0;
 					      prType 0 t;
 					      msgEBlock ();
 					      msgString ")";
-					      msgString " -> "; 
+					      msgString " -> ";
 					      prType 0 t')
 				     | _ => prType 0 tscBody)
 		                | _ => prType 0 tscBody)
 		     | _ => prType 0 tscBody)))
                  info
-and prTyInfo id (tyfun,conenv) = 
-    let fun prTypeArgs vs = 
+and prTyInfo id (tyfun,conenv) =
+    let fun prTypeArgs vs =
 	    case vs of
 		[] => ()
-	      | [v] => (prTypeVar v; 
+	      | [v] => (prTypeVar v;
 			msgBreak (1,1))
 	      |  _  => (msgString "(";
 			prTypeVarSeq vs ",";
@@ -2801,7 +2813,10 @@ and prTyInfo id (tyfun,conenv) =
 				msgString " =";
 				msgBreak(1, 2);
 				prType 0 ty))
-		              ())
+		              ();
+                 msgString "-- end type";
+                 msgEOL()
+                              )
 	  | (TYPEtyfun(vs,ty),ConEnv _) =>
 		(msgString "datatype ";
 		 under_binder (fn () =>
@@ -2816,45 +2831,47 @@ and prTyInfo id (tyfun,conenv) =
 			        msgBreak(0,0)
 				))
 		               ();
+                 msgString "-- conenv";
+                 msgEOL();
 		 prConEnv conenv;
 		 msgString ")";
 		 msgEBlock())
 	 | (_,_) => fatalError "prTyInfo"
     end
-and prConEnv CE = 
+and prConEnv CE =
 	    (msgString "{";
 	     msgCBlock 0;
-	     prEnv (prVarInfo (fn info => ())) 
+	     prEnv (prVarInfo (fn info => ()))
 	           (VEofCE CE)
 		   true;
 	     msgString "}";
  	     msgEBlock())
-and prStrBody S initial = 
-    case S of 
+and prStrBody S initial =
+    case S of
        STRstr (ME,FE,GE,TE,VE) =>
-        let val initial = prEnv prModInfo ME initial  
-	    val initial = prEnv prFunInfo FE initial  
-	    val initial = prEnv prSigInfo GE initial  
-	    val initial = prEnv prTyInfo TE initial 
+        let val initial = prEnv prModInfo ME initial
+	    val initial = prEnv prFunInfo FE initial
+	    val initial = prEnv prSigInfo GE initial
+	    val initial = prEnv prTyInfo TE initial
 	in prEnv (prVarInfo (fn info => ())) VE initial
 	end
-    |  SEQstr (S,S') => 
-        let val initial = prStrBody S initial  
-	in  prStrBody S' initial 
+    |  SEQstr (S,S') =>
+        let val initial = prStrBody S initial
+	in  prStrBody S' initial
 	end
-and prRecStr RS = 
+and prRecStr RS =
     case RS of
-       NONrec S =>  
+       NONrec S =>
 	   (msgString "{";
 	    msgCBlock 0;
-	    prStrBody S true ;  
+	    prStrBody S true ;
 	    msgString "}";
 	    msgEBlock())
      | RECrec (RS,RS') =>
 	   (msgString "rec (";
 	    msgIBlock 0;
 	    prRecStr RS;
-	    msgString ",";             
+	    msgString ",";
 	    msgBreak (0,3);
 	    prRecStr RS';
 	    msgEBlock();
@@ -2881,7 +2898,7 @@ and prBoundTyNameSet binder offset T =
                    msgBreak(0,offset); *)
 		   prBody ();
 		   msgEBlock()))
-and prMod prior M = 
+and prMod prior M =
   let
     fun prParen prior' s = if prior >= prior' then msgString s else ()
   in
@@ -2889,16 +2906,16 @@ and prMod prior M =
      STRmod S => prRecStr S
    | FUNmod F => prGenFun prior F (* cvr: REVISE *)
   end
-and prGenFun prior (T,M,X) = 
+and prGenFun prior (T,M,X) =
   let
     fun prParen prior' s = if prior >= prior' then msgString s else ()
   in
    (prParen 1 "(";
-    prBoundTyNameSet "!" 1 T 
-         (fn () => 
+    prBoundTyNameSet "!" 1 T
+         (fn () =>
              (msgIBlock 0;
 	      prMod 1 M;
-	      msgString "->";             
+	      msgString "->";
 	      msgBreak (0,4);
 	      prExMod 0 X;
               msgEBlock()));
@@ -2919,7 +2936,7 @@ and prExMod prior (EXISTSexmod(T,M)) =
     prParen 1 ")")
   end
 and prSig (LAMBDAsig(T,M)) =
-   prBoundTyNameSet "/\\" 2 T (fn () => prMod 0 M)
+   prBoundTyNameSet "/\\ " 2 T (fn () => prMod 0 M)
 and prSigInfo id {qualid,info = G} =
     (msgString "signature ";
      msgString id;
@@ -2933,18 +2950,18 @@ val prTyFun = prTyFun 0;
 val prType = prType 0;
 
 
-local val checkpointed_free_variable_names = ref [] 
+local val checkpointed_free_variable_names = ref []
 in
-val checkpoint_free_typevar_names = fn () => 
+val checkpoint_free_typevar_names = fn () =>
     (checkpointed_free_variable_names := map (fn (tv,string) => ((tv,!tv))) (!free_variable_names))
 val rollback_free_typevar_names = fn () =>
-    app (fn (tv,string) => 
-	   tv := ((lookup tv (!checkpointed_free_variable_names)) 
+    app (fn (tv,string) =>
+	   tv := ((lookup tv (!checkpointed_free_variable_names))
 	          handle Subscript => !tv))
         (!free_variable_names)
 val commit_free_typevar_names = fn () =>
-    free_variable_names := drop (fn (tv,name) => 
-				 let val {tvEqu,tvImp,tvKind,...} =  
+    free_variable_names := drop (fn (tv,name) =>
+				 let val {tvEqu,tvImp,tvKind,...} =
 					 (lookup tv (!checkpointed_free_variable_names))
 					  handle Subscript => !tv
 				 in if (#tvEqu(!tv)) <> tvEqu
@@ -2952,18 +2969,18 @@ val commit_free_typevar_names = fn () =>
 				       orelse case ((#tvKind(!tv)),tvKind) of
 				                (LinkTo _, NoLink) => true | _ => false
                                     then
-					let val tau = normType(VARt tv) 
+					let val tau = normType(VARt tv)
 					in
 					    collectExplicitVars tau;
 					    msgIBlock 0;
 					    errPrompt "Warning: the free type variable ";
-					    let val {tvEqu,tvImp,...} = 
+					    let val {tvEqu,tvImp,...} =
 						(lookup tv (!checkpointed_free_variable_names))
 						handle Subscript => !tv
-					    in 
+					    in
 						msgString ("'"^
 							   (if tvEqu then "'" else "") ^
-								(if tvImp andalso not (!value_polymorphism) 
+								(if tvImp andalso not (!value_polymorphism)
 								     then "_" else "") ^
 								     name)
 					    end;
@@ -3018,25 +3035,25 @@ fun printNextScheme scheme = prTypeScheme scheme;
 
 (* error reporting *)
 local
- fun prPath path = 
+ fun prPath path =
      case path of
-	 NILpath => 
+	 NILpath =>
 	     (fn () => ())
-       | IDpath id => 
+       | IDpath id =>
 	     (msgString " ";msgString id;
 	      fn () => ())
-       | DOTpath (NILpath,id) => 
+       | DOTpath (NILpath,id) =>
 	     (msgString " ";msgString id;
 	      fn () => ())
-       | DOTpath (path as DOMpath _,id) => 
+       | DOTpath (path as DOMpath _,id) =>
 	     (msgString " ";msgString id;
 	      fn () => (msgString " of";
 			prPath path()))
-       | DOTpath (path as RNGpath _,id) => 
+       | DOTpath (path as RNGpath _,id) =>
 	     (msgString " ";msgString id;
 	      fn () => (msgString " of";
 			prPath path()))
-       | DOTpath (UNITpath,id) => 
+       | DOTpath (UNITpath,id) =>
 	     (case (modeOfSig (!currentSig)) of
 		  STRmode => (msgString " ";msgString (!(#uIdent(!currentSig)));
 			      msgString ".";msgString id;
@@ -3046,8 +3063,8 @@ local
 		| TOPDECmode => (msgString " ";msgString id;
 				 fn () =>
 				   (msgString " in the toplevel unit ";
-				    msgString (currentUnitName())))) 
-       | DOTpath (path,id) => 
+				    msgString (currentUnitName()))))
+       | DOTpath (path,id) =>
 	     (let val cont = prPath path
 	      in
 		 msgString ".";
@@ -3077,30 +3094,30 @@ in
 end
 ;
 
-(* cvr: it may be worth restructuring this code to print out the actual info for each field *)	     
+(* cvr: it may be worth restructuring this code to print out the actual info for each field *)
 
 
-fun errMatchReason infDesc specDesc matchreason = 
+fun errMatchReason infDesc specDesc matchreason =
 let fun prInf path =
         case path of
 	    NILpath => msgString infDesc
 	  | UNITpath => msgString infDesc
 	  | IDpath _ => msgString infDesc
-	  | DOTpath (path,_) => prInf path 
-	  | DOMpath path => prSpec path 
-	  | RNGpath path => prInf path 
+	  | DOTpath (path,_) => prInf path
+	  | DOMpath path => prSpec path
+	  | RNGpath path => prInf path
     and prSpec path  =
 	case path of
 	    NILpath => msgString specDesc
 	  | UNITpath => msgString specDesc
 	  | IDpath _ => msgString specDesc
 	  | DOTpath (path,_) => prSpec path
-	  | DOMpath path => prInf path 
+	  | DOMpath path => prInf path
 	  | RNGpath path => prSpec path
 
    fun errMissingDeclaration (path,id,info) s freeVarsInfo prInfo =
-	under_binder (fn info => 
-		      (collectExplicitVarsInObj freeVarsInfo info;	     
+	under_binder (fn info =>
+		      (collectExplicitVarsInObj freeVarsInfo info;
 		       msgIBlock 0;
 		       errPrompt "Missing declaration: ";msgString s;
 		       prPath (DOTpath(path,id));msgEOL();
@@ -3114,34 +3131,34 @@ let fun prInf path =
 		       msgEBlock()))
 	               info
 in
-    case matchreason of	
+    case matchreason of
     MissingValue pathidinfo =>
-	errMissingDeclaration pathidinfo 
+	errMissingDeclaration pathidinfo
 	                      "value"
-			      freeVarsVarInfo 
+			      freeVarsVarInfo
 			      (prVarInfo (fn info => ()))
   | MissingType pathidinfo =>
-	errMissingDeclaration pathidinfo 
+	errMissingDeclaration pathidinfo
 	                      "type constructor"
-			      freeVarsTyStr 
+			      freeVarsTyStr
 			      prTyInfo
   | MissingStructure pathidinfo =>
-	errMissingDeclaration pathidinfo 
+	errMissingDeclaration pathidinfo
 	                      "structure"
-			      freeVarsModInfo 
+			      freeVarsModInfo
 			      prModInfo
   | MissingFunctor pathidinfo =>
-	errMissingDeclaration pathidinfo 
+	errMissingDeclaration pathidinfo
 	                      "functor"
-			      freeVarsFunInfo 
+			      freeVarsFunInfo
 			      prFunInfo
   | MissingSignature pathidinfo =>
-	errMissingDeclaration pathidinfo 
+	errMissingDeclaration pathidinfo
 	                      "signature"
-			      freeVarsSigInfo 
+			      freeVarsSigInfo
 			      prSigInfo
   | MissingInfixStatus pathidinfo =>
-	errMissingDeclaration pathidinfo 
+	errMissingDeclaration pathidinfo
 	                      "the infix status of"
 			      (fn _ => fn _ => fn _ => fn _ => ([],[],[]))
 			      prInfixStatus
@@ -3171,16 +3188,16 @@ in
 	     msgEOL();
  	     errPrompt "  ";prSigInfo id infInfo;msgEOL();
 	     errPrompt "in the ";prInf path;msgEOL();
-	     (case reasonopt of 
-		  NONE => () 
-		| SOME reason => 
+	     (case reasonopt of
+		  NONE => ()
+		| SOME reason =>
 		      (errPrompt "The declaration does \
 		         \not match the specification because ...";
 		       msgEOL();
 		       errMatchReason "declared signature" "specified signature" reason);
- 	      case reasonopt' of 
-		  NONE => () 
-		| SOME reason => 
+ 	      case reasonopt' of
+		  NONE => ()
+		| SOME reason =>
 		      (errPrompt "The specification does \
 		         \not match the declaration because";
 		       msgEOL();
@@ -3189,14 +3206,14 @@ in
 	     msgEOL();
 	     msgEBlock()))
             ()
-    (* cvr: we trap this StatusMismatch for two constructors 
+    (* cvr: we trap this StatusMismatch for two constructors
        to report representation mismatches better *)
   | StatusMismatch (path,id,infInfo as {info=(_,CONname infConInfo),...},
 			    specInfo as {info=(_,CONname specConInfo),...})=>
-	let val (argdesc,fs) = 
+	let val (argdesc,fs) =
 	    (case specInfo of
 		{info = (TypeScheme {tscBody = ARROWt(t,t'),...},_),...} =>
-		    (case normType t of   
+		    (case normType t of
 			 RECt (ref {fields = fs,...}) =>
 			     (if isTupleRow fs then ("tuple",fs) else ("record",fs))
 		       | _ => ("record",[]))
@@ -3205,21 +3222,21 @@ in
 				    conIsGreedy=thisIsGreedy,
 				    conTag=thisTag,
 				    conSpan=thisSpan,
-				    ...}) 
+				    ...})
 	                           (ref {conArity=otherArity,
 				    conIsGreedy=otherIsGreedy,
 				    conTag=otherTag,
 				    conSpan=otherSpan,
-				    ...}) = 
+				    ...}) =
             (if otherArity <> thisArity andalso thisIsGreedy
-	     then (msgString "a constructor carrying ";msgInt thisArity; 
+	     then (msgString "a constructor carrying ";msgInt thisArity;
 		   msgString " fields of a "; msgString argdesc)
              else if otherArity <> thisArity andalso not(thisIsGreedy)
-	     then (msgString "a constructor carrying a ";msgString argdesc;msgString " with ";msgInt otherArity; 
+	     then (msgString "a constructor carrying a ";msgString argdesc;msgString " with ";msgInt otherArity;
 		   msgString " fields")
              else if not(otherIsGreedy) andalso thisIsGreedy
 	     then (msgString "a constructor carrying one field of a ";msgString argdesc)
-	     else if otherIsGreedy andalso not(thisIsGreedy)		  
+	     else if otherIsGreedy andalso not(thisIsGreedy)
              then msgString "a constructor carrying a record with one field"
              else if otherTag <> thisTag
 	     then (msgString "constructor ";msgInt thisTag; msgString " of ";
@@ -3227,34 +3244,34 @@ in
              else (* otherSpan <> thisSpan *)
 	          (msgString "one constructor out of ";
 		   msgInt thisSpan; msgString " constructor(s)"))
-           fun prFields fs = 
+           fun prFields fs =
 	       let fun prTy_ n = (msgString "<ty_";msgInt n;msgString ">")
 		   fun prRow fs n =
 		   case fs of
 		       [] => ()
 		     | [(lab,t)] =>
 			   (msgIBlock 0; printLab lab; msgString " :";
-			    msgBreak(1, 2); 
+			    msgBreak(1, 2);
 			    prTy_ n;
 			    msgEBlock())
 		     | (lab,t) :: rest =>
 		       (msgIBlock 0; printLab lab; msgString " :"; msgBreak(1, 2);
 			prTy_ n;
-			msgString ","; msgEBlock(); msgBreak(1, 0); 
+			msgString ","; msgEBlock(); msgBreak(1, 0);
 			prRow rest (n+1))
 		   fun prTuple fs n =
 		   case fs of
 		       [] => ()
 		     | [(lab,t)] =>
-			   (msgIBlock 0; 
+			   (msgIBlock 0;
 			    prTy_ n; msgEBlock())
 		     | (lab,t) :: rest =>
-		       (msgIBlock 0; 
+		       (msgIBlock 0;
 			prTy_ n;
 			msgString " *"; msgEBlock(); msgBreak(1,0);
                         prTuple rest (n+1))
 	       in
-		   if isTupleRow fs 
+		   if isTupleRow fs
 		       then prTuple fs 1
 		   else (msgString "{";prRow fs 1;msgString "}")
 	       end
@@ -3262,12 +3279,12 @@ in
 				    conIsGreedy=thisIsGreedy,
 				    conTag=thisTag,
 				    conSpan=thisSpan,
-				    ...}) 
+				    ...})
 	                           (ref {conArity=otherArity,
 				    conIsGreedy=otherIsGreedy,
 				    conTag=otherTag,
 				    conSpan=otherSpan,
-				    ...}) = 
+				    ...}) =
             (if otherArity <> thisArity orelse otherIsGreedy <> thisIsGreedy
 	     then if thisIsGreedy
                   then (errPrompt msg;msgEOL();
@@ -3279,7 +3296,7 @@ in
                                                 prFields fs; msgString ")\"";
 			    msgEOL())
 		  else (errPrompt msg;msgEOL();
-			errPrompt "- in the ";prDesc path; 
+			errPrompt "- in the ";prDesc path;
 			msgString", re-express the argument type of the constructor as a syntactic ";
 			msgString argdesc;msgString ":";msgEOL();
 			errPrompt "  change \"";msgString id;msgString " of ";
@@ -3289,8 +3306,8 @@ in
 	     else ())
        in
        under_binder (fn () =>
-	    (collectExplicitVarsInObj freeVarsVarInfo specInfo;	     
-	     collectExplicitVarsInObj freeVarsVarInfo infInfo;	     
+	    (collectExplicitVarsInObj freeVarsVarInfo specInfo;
+	     collectExplicitVarsInObj freeVarsVarInfo infInfo;
 	     msgIBlock 0;
 	     errPrompt "Status mismatch: constructor ";
 	     prPath(DOTpath(path,id));msgEOL();
@@ -3304,14 +3321,14 @@ in
 	     errPrompt "  ";prVarInfo (fn info => ()) id infInfo;msgEOL();
 	     rectifyConInfo "EITHER: edit the specification to match the declaration: " prSpec specConInfo infConInfo;
 	     rectifyConInfo "OR: edit the declaration to match the specification: "  prInf infConInfo specConInfo;
-	     msgEBlock())) 
+	     msgEBlock()))
              ()
        end
   | StatusMismatch (path,id,infInfo as {info=(_,infStatus),...},
 			    specInfo as {info=(_,specStatus),...})=>
        under_binder (fn () =>
-	    (collectExplicitVarsInObj freeVarsVarInfo specInfo;	     
-	     collectExplicitVarsInObj freeVarsVarInfo infInfo;	     
+	    (collectExplicitVarsInObj freeVarsVarInfo specInfo;
+	     collectExplicitVarsInObj freeVarsVarInfo infInfo;
 	     msgIBlock 0;
 	     errPrompt "Status mismatch: identifier";
 	     prPath(DOTpath(path,id));msgEOL();
@@ -3323,7 +3340,7 @@ in
 			  | (_         ,PRIMname _) => "a primitive"
 			  | ( CONname _,CONname _) => "a constructor"
 			  | (_         ,CONname _) => "a constructor"
-			  | (EXNname infei,EXNname specei) => 
+			  | (EXNname infei,EXNname specei) =>
 				fatalError "errMatchReason 1"
 (* ps:				(case(#exconTag(!infei),#exconTag(!specei)) of
 				     (NONE,SOME _) => "a static exception"
@@ -3341,7 +3358,7 @@ in
 			  | (PRIMname _,_) => "a primitive"
 			  | (CONname _,CONname _) => "a constructor with a different representation"
 			  | (CONname _,_) => "a constructor"
-			  | (EXNname infei,EXNname specei) => 
+			  | (EXNname infei,EXNname specei) =>
 				fatalError "errMatchReason 2"
 				(* ps:
 				(case(#exconTag(!infei),#exconTag(!specei)) of
@@ -3352,9 +3369,9 @@ in
 			  | (REFname,_) => "the `ref' constructor");
 	     msgString " in the ";prInf path;msgEOL();
 	     errPrompt "  ";prVarInfo (fn info => ()) id infInfo;msgEOL();
-	     msgEBlock())) 
+	     msgEBlock()))
              ()
-  | ConEnvMismatch (path,id,infTyStr,specTyStr) => 
+  | ConEnvMismatch (path,id,infTyStr,specTyStr) =>
 	 under_binder (fn () =>
 	    (collectExplicitVarsInObj freeVarsTyStr specTyStr;
 	     collectExplicitVarsInObj freeVarsTyStr infTyStr;
@@ -3399,7 +3416,7 @@ in
 	     errPrompt "Arity mismatch: type constructor";
 	     prPath(DOTpath(path,id));msgEOL();
 	     errPrompt "is specified with arity ";
-	     msgInt (specArity);msgString " in the ";prSpec path;msgEOL();              
+	     msgInt (specArity);msgString " in the ";prSpec path;msgEOL();
 	     errPrompt "  ";prTyInfo id specTyStr;msgEOL();
 	     errPrompt "but declared with arity ";msgInt (infArity);
 	     msgString " in the ";prInf path;msgEOL();
@@ -3415,10 +3432,10 @@ in
 	     errPrompt "Equality type mismatch: type constructor";
 	     prPath(DOTpath(path,id));msgEOL();
 	     errPrompt "is specified as a `prim_EQtype' in the ";
-	     prSpec path;msgEOL();              
+	     prSpec path;msgEOL();
 	     errPrompt "  ";prTyInfo id specTyStr;msgEOL();
 	     errPrompt "but is not declared as a `prim_EQtype' in the ";
-	     prInf path;msgEOL();              
+	     prInf path;msgEOL();
  	     errPrompt "  ";prTyInfo id infTyStr;msgEOL();
 	     msgEBlock()))
             ()
@@ -3430,14 +3447,14 @@ in
 	     errPrompt "Equality type mismatch: type constructor";
 	     prPath(DOTpath(path,id));msgEOL();
 	     errPrompt "is specified as admitting equality in the ";
-	     prSpec path;msgEOL();              
+	     prSpec path;msgEOL();
 	     errPrompt "  ";prTyInfo id specTyStr;msgEOL();
 	     errPrompt "but its declaration does not admit equality in the ";
-	     prInf path;msgEOL();              
+	     prInf path;msgEOL();
  	     errPrompt "  ";prTyInfo id infTyStr;msgEOL();
 	     msgEBlock()))
             ()
-  | TransparentMismatch (path,id,infTyStr,specTyStr) => 
+  | TransparentMismatch (path,id,infTyStr,specTyStr) =>
 	 under_binder (fn () =>
 	    (collectExplicitVarsInObj freeVarsTyStr specTyStr;
 	     collectExplicitVarsInObj freeVarsTyStr infTyStr;
@@ -3445,16 +3462,16 @@ in
 	     errPrompt "Type mismatch: type constructor";
 	     prPath(DOTpath(path,id));msgEOL();
 	     errPrompt "is specified as one abbreviation in the ";
-	     prSpec path;msgEOL();              
+	     prSpec path;msgEOL();
 	     errPrompt "  ";prTyInfo id specTyStr;msgEOL();
 	     errPrompt "but declared as a different abbreviation in the ";
-	     prInf path;msgEOL();              
+	     prInf path;msgEOL();
  	     errPrompt "  ";prTyInfo id infTyStr;msgEOL();
 	     errPrompt "The abbreviations should be equivalent (or unifiable) ";msgEOL();
 	     msgEBlock()))
             ()
-  | PatternMismatch (path,id,infTyStr, specTyStr, tn,sv) => 
-	    under_binder 
+  | PatternMismatch (path,id,infTyStr, specTyStr, tn,sv) =>
+	    under_binder
 	    (fn () =>
 	     (collectExplicitVarsInObj freeVarsTyStr specTyStr;
 	      collectExplicitVarsInObj freeVarsTyStr infTyStr;
@@ -3470,7 +3487,7 @@ in
 	      errPrompt "The declaration violates the specification because ";
               msgEOL();
               (case sv of
-		   TYNAMEsv tn' => 
+		   TYNAMEsv tn' =>
 		       (errPrompt "the type constructor ";
 			prTyName false tn';
 			msgString " is a parameter " ;
@@ -3479,8 +3496,8 @@ in
 			 \the scope of ";
 			prTyName false tn;
 			msgString ".";
-			msgEOL()) 
-		 | TYPEVARsv tv => 
+			msgEOL())
+		 | TYPEVARsv tv =>
 		       (errPrompt "the type variable ";
 			prTypeVar tv;
 			msgString " is a parameter " ;
@@ -3492,8 +3509,8 @@ in
 			msgEOL()));
 	      msgEBlock()))
 	    ()
-  | CircularMismatch (path,id,infTyStr,specTyStr,tn) => 
-	    under_binder 
+  | CircularMismatch (path,id,infTyStr,specTyStr,tn) =>
+	    under_binder
 	    (fn () =>
 	     (collectExplicitVarsInObj freeVarsTyStr specTyStr;
 	      collectExplicitVarsInObj freeVarsTyStr infTyStr;
@@ -3526,7 +3543,7 @@ in
 	     errPrompt "The declaration should also be a datatype";msgEOL();
 	     msgEBlock()))
             ()
-  | ModuleMismatch (path as NILpath,infDesc,specDesc) => 
+  | ModuleMismatch (path as NILpath,infDesc,specDesc) =>
 	     (msgIBlock 0;
 	      errPrompt "Module mismatch: The ";
               prSpec path;msgString " specifies a ";msgString specDesc;
@@ -3534,7 +3551,7 @@ in
 	      errPrompt "but the ";prInf path;msgString " is a " ;msgString infDesc;
 	      msgEOL();
 	      msgEBlock())
-  | ModuleMismatch (path,infDesc,specDesc) => 
+  | ModuleMismatch (path,infDesc,specDesc) =>
 	     (msgIBlock 0;
 	      errPrompt "Module mismatch:";
 	      prPath path;msgEOL();
@@ -3546,7 +3563,7 @@ in
 end
 ;
 
-local 
+local
   fun warnAdditional path desc =
 	     (msgIBlock 0;
 	      errPrompt "Warning: "; msgString desc;
@@ -3558,7 +3575,7 @@ local
   fun checkTyInfo path id (infTyStr : TyFun * ConEnv) (specTyStr : TyFun * ConEnv) =
 	case (#2 infTyStr,#2 specTyStr) of
 	    (ConEnv [], ConEnv []) => ()
-	  | (ConEnv (_::_), ConEnv []) => 
+	  | (ConEnv (_::_), ConEnv []) =>
 		(msgIBlock 0;
 		 errPrompt "Warning: type constructor";
 		 prPath (DOTpath(path,id));msgEOL();
@@ -3570,15 +3587,15 @@ local
 	  | (ConEnv _, ConEnv _) => ()
 	  | (_,_) => fatalError "checkTyInfo"
 
-  fun checkVarInfo path id 
+  fun checkVarInfo path id
     (infInfo as {info = (_,infStatus),qualid = infQualid})
     (specInfo as {info = (_,specStatus),qualid = specQualid}) =
     let
 	val {qual=infQual, ...} = infQualid
-	val {qual=specQual,...} = specQualid 
+	val {qual=specQual,...} = specQualid
     in
       case specStatus of
-        VARname ovltype => 
+        VARname ovltype =>
           (case infStatus of
 	       CONname _ =>
 		   (msgIBlock 0;
@@ -3602,42 +3619,42 @@ local
 	     | _ => ())
       | _  => ()
   end
-  and checkStr path S S' = 
+  and checkStr path S S' =
       case S of
-	 STRstr (ME,FE,GE,TE,VE) => 
+	 STRstr (ME,FE,GE,TE,VE) =>
 	  (traverseEnv (fn id => fn infInfo =>
 			checkTyInfo path id infInfo (lookupEnv (TEofStr S') id)
-			handle Subscript => 
+			handle Subscript =>
 			    warnAdditional (DOTpath(path,id)) "type constructor")
 	   TE;
 	   traverseEnv (fn id => fn infInfo =>
 			 checkVarInfo path id infInfo (lookupEnv (VEofStr S') id)
-			 handle Subscript => 
+			 handle Subscript =>
 			     warnAdditional (DOTpath(path,id)) "value")
 	   VE;
 	   traverseEnv (fn id => fn infInfo =>
 			checkModInfo path id infInfo (lookupEnv (MEofStr S') id)
-			handle Subscript =>  
+			handle Subscript =>
 			    warnAdditional (DOTpath(path,id)) "structure")
 	   ME;
 	   traverseEnv (fn id => fn infInfo =>
 			checkFunInfo path id infInfo (lookupEnv (FEofStr S') id)
-			handle Subscript => 
+			handle Subscript =>
 			    warnAdditional (DOTpath(path,id)) "functor")
 	   FE;
 	   traverseEnv (fn id => fn infInfo =>
 			checkSigInfo path id infInfo (lookupEnv (GEofStr S') id)
-			handle Subscript => 
+			handle Subscript =>
 			    warnAdditional (DOTpath(path,id)) "signature")
 	   GE)
        |  SEQstr (S1,S2) => (checkStr path S1 S'; checkStr path S2 S')
-  and checkRecStr path RS (RECrec (RS1',RS2')) = 
+  and checkRecStr path RS (RECrec (RS1',RS2')) =
 	checkRecStr path RS RS2'
-    | checkRecStr path (NONrec S) (NONrec S') = 
+    | checkRecStr path (NONrec S) (NONrec S') =
 	checkStr path S S'
-    | checkRecStr path (RECrec(RS1,RS2)) RS' = 
+    | checkRecStr path (RECrec(RS1,RS2)) RS' =
         checkRecStr path RS2 RS'
-  and checkFun path (T,M,X) (T',M',X') = 
+  and checkFun path (T,M,X) (T',M',X') =
 	checkExMod (RNGpath(path)) X X'
   and checkModInfo path id {qualid = _,info = RS} {qualid = _,info = RS'} =
         checkRecStr (DOTpath(path,id))  RS RS'
@@ -3656,40 +3673,40 @@ local
       Hasht.apply
         (fn id => fn infInfo =>
 	 ((ignore (Hasht.find specIBas id))
-	  handle Subscript => 
+	  handle Subscript =>
 	      warnAdditional (DOTpath(path,id)) "the infix status of"))
 	infIBas
 in
 
-fun checkCSig infCSig specCSig = 
-    if modeOfSig(specCSig) = STRmode then () 
+fun checkCSig infCSig specCSig =
+    if modeOfSig(specCSig) = STRmode then ()
     else
-	case !(strOptOfSig specCSig) of 
+	case !(strOptOfSig specCSig) of
 	    NONE => fatalError "checkCSig"
-	  | SOME RS => 
+	  | SOME RS =>
 		let val RS' = NONrec (STRstr (mk1TopEnv (#uModEnv infCSig),
 					      mk1TopEnv (#uFunEnv infCSig),
 					      mk1TopEnv (#uSigEnv infCSig),
 					      mk1TopEnv (#uTyEnv  infCSig),
 					      mk1TopEnv (#uVarEnv infCSig)))
 		in
-		    checkRecStr UNITpath RS' RS; 
-		    checkInfixBasis UNITpath (iBasOfSig (infCSig)) 
+		    checkRecStr UNITpath RS' RS;
+		    checkInfixBasis UNITpath (iBasOfSig (infCSig))
 		                             (iBasOfSig (specCSig))
 		end
 end;
 
 
 
-(* lookup with calculated position in 
+(* lookup with calculated position in
    normed (sorted) structures and environments *)
 
 fun sizeModInfo {qualid,info} = if isGlobalName qualid then 0 else 1
 fun sizeFunInfo {qualid,info} = if isGlobalName qualid then 0 else 1
 fun sizeVarInfo {qualid,info = (_,cs)} =
-    if isGlobalName qualid 
+    if isGlobalName qualid
 	then 0
-    else 
+    else
          (case cs of
                VARname _ => 1
              | EXNname ei =>
@@ -3699,7 +3716,7 @@ fun sizeVarInfo {qualid,info = (_,cs)} =
 
 fun sizeOfModEnv env =
     foldEnv (fn _ => fn info => fn size => size + sizeModInfo info) 0 env
-fun sizeOfFunEnv env = 
+fun sizeOfFunEnv env =
     foldEnv (fn _ => fn info => fn size => size + sizeFunInfo info) 0 env
 fun sizeOfVarEnv env =
     foldEnv (fn _ => fn info => fn size => size + sizeVarInfo info) 0 env
@@ -3714,24 +3731,24 @@ fun sizeOfStr (STRstr(ME,FE,GE,TE,VE)) = sizeOfModEnv ME + sizeOfFunEnv  FE + si
    and type expressions) *)
 
 fun lookupMEofStr str =
-    case str of 
-	  STRstr(ME,FE,GE,TE,VE) => 
+    case str of
+	  STRstr(ME,FE,GE,TE,VE) =>
 		(fn mid => lookupEnvWithPos sizeModInfo ME mid 0)
 	| _ => fn mid => (0, lookupEnv (MEofStr str) mid)
 
 fun lookupFEofStr str =
-    case str of 
-	 STRstr(ME,FE,GE,TE,VE) => 
+    case str of
+	 STRstr(ME,FE,GE,TE,VE) =>
 	    let val sizeOfME = sizeOfModEnv ME in
-		fn fid => lookupEnvWithPos sizeFunInfo FE fid sizeOfME 
+		fn fid => lookupEnvWithPos sizeFunInfo FE fid sizeOfME
 	    end
 	|  _ => fn fid => (0, lookupEnv (FEofStr str) fid)
 
 fun lookupVEofStr str =
-    case str of 
-	 STRstr(ME,FE,GE,TE,VE) => 
+    case str of
+	 STRstr(ME,FE,GE,TE,VE) =>
 	    let val sizeOfMEFE = (sizeOfModEnv ME) + (sizeOfFunEnv FE) in
-		fn vid => lookupEnvWithPos sizeVarInfo VE vid sizeOfMEFE 
+		fn vid => lookupEnvWithPos sizeVarInfo VE vid sizeOfMEFE
 	    end
 	| _ => fn vid => (0, lookupEnv (VEofStr str) vid)
 
@@ -3740,13 +3757,13 @@ fun lookupMEofEnv ((ME,_,_,_,_):Environment) =
 
 
 fun lookupFEofEnv ((ME,FE,_,_,_):Environment) =
-    let val sizeOfME = sizeOfModEnv ME 
+    let val sizeOfME = sizeOfModEnv ME
     in
 	fn fid => lookupEnvWithPos sizeFunInfo FE fid sizeOfME
     end;
-    
+
 fun lookupVEofEnv ((ME,FE,_,VE,_):Environment) =
-    let 
+    let
 	val sizeOfMEFE = sizeOfModEnv ME + sizeOfFunEnv FE
     in
 	fn vid => lookupEnvWithPos sizeVarInfo VE vid (sizeOfMEFE)
@@ -3767,27 +3784,27 @@ local fun warnToplevelImperativeVar desc id =
   msgEBlock()
 )
 in
-fun checkClosedExEnvironment  (EXISTS(T,(ME,FE,GE,VE,TE))) = 
-  let val fvs = (map #1 (!free_variable_names)) 
+fun checkClosedExEnvironment  (EXISTS(T,(ME,FE,GE,VE,TE))) =
+  let val fvs = (map #1 (!free_variable_names))
   in
   ( foldEnv (fn id => fn {qualid, info = (sc,_)} => fn _ =>
-                    (checkClosedTypeScheme fvs sc) 
+                    (checkClosedTypeScheme fvs sc)
                     handle Subscript => warnToplevelImperativeVar "value" id)
             () VE;
     foldEnv (fn id => fn (tyfun,_) => fn _ =>
-                    (checkClosedTyFun fvs tyfun) 
+                    (checkClosedTyFun fvs tyfun)
                     handle Subscript => warnToplevelImperativeVar "type" id)
             () TE;
     foldEnv (fn id => fn {qualid, info = RS} => fn _ =>
-                    (checkClosedRecStr fvs RS) 
+                    (checkClosedRecStr fvs RS)
                     handle Subscript => warnToplevelImperativeVar "structure" id)
             () ME;
     foldEnv (fn id => fn {qualid, info = F} => fn _ =>
-                    (checkClosedGenFun fvs F) 
+                    (checkClosedGenFun fvs F)
                     handle Subscript => warnToplevelImperativeVar "functor" id)
             () FE;
     foldEnv (fn id => fn {qualid, info = G} => fn _ =>
-                    (checkClosedSig fvs G) 
+                    (checkClosedSig fvs G)
                     handle Subscript => warnToplevelImperativeVar "signature" id)
             () GE)
   end

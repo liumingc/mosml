@@ -181,6 +181,7 @@ fun report_comp_results iBas (Env as EXISTS(T,(ME,FE,GE,VE,TE))) =
          case T of
              [] => true
            |   _ =>  (msgIBlock 0;
+                      msgString "reportCompResults+";
                       msgPrompt "New type names: ";
                       prTyNameSet T ",";
                       msgEOL();

@@ -97,7 +97,7 @@ in
 fun printQualId {qual="", id=id} =
       print_id id
   | printQualId {qual=qual, id=id} =
-      (msgString "qual="; msgString qual; msgString ", id="; print_id id)
+      (msgString "[qual="; msgString qual; msgString ", id="; print_id id; msgString "]")
       (* (msgString qual;  msgString "." ; print_id id) *)
 end;
 

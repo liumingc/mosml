@@ -1279,6 +1279,19 @@ fun trToplevelDec rho (dec as (_, dec')) =
         let val ((rho',depth'), envelope) =
               trOpenLongModIdInfos (rho,0) longmodidinfos
             val vars = foldEnv (fn Id => fn _ => fn vars => Id :: vars) [] rho'
+            (*
+            val _ = if true
+                    then
+                    (
+                        msgIBlock 0;
+                        msgString "open!!!";
+                        msgEOL();
+                        map (fn ident => (msgString "open=>"; msgString (mangle ident); msgEOL())) vars;
+                        msgEOL();
+                        msgEBlock()
+                    )
+                    else ()
+            *)
             val n = length vars
             val rho'' = mkHashEnv n rho'
             val renEnv = map (renameId o mangle) vars
