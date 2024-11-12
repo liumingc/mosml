@@ -1,6 +1,7 @@
 #include <setjmp.h>
+#include <stdlib.h>
 
-main()
+int main(int argc, char ** argv)
 {
   jmp_buf buf;
   int i;

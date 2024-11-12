@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
-main()
+int main(int argc, char ** argv)
 {
-  long n[2];
+  int32_t n[2];
   char * p;
 
   n[0] = 0x41424344;
