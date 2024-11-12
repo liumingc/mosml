@@ -84,7 +84,8 @@ while true; do
   case $? in
   100) echo "Your compiler chokes on the \"volatile\" modifier."
        echo "Never mind, we'll do without it."
-       volatile="-Dvolatile=";;
+       volatile="-Dvolatile="
+       break;;
     0) echo "This architecture has no alignment constraints."
        echo "#undef ALIGNMENT" >> m.h
        break;;
